@@ -14,6 +14,7 @@
 #include <zephyr/logging/log.h>
 
 #include "battery_common.h"
+#include <drivers/sensor/battery/battery_voltage_divider.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -42,7 +43,7 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
 
     // Make sure selected channel is supported
     if (chan != SENSOR_CHAN_GAUGE_VOLTAGE && chan != SENSOR_CHAN_GAUGE_STATE_OF_CHARGE &&
-        chan != SENSOR_CHAN_ALL) {
+        chan != SENSOR_CHAN_CHARGING && chan != SENSOR_CHAN_ALL) {
         LOG_DBG("Selected channel is not supported: %d.", chan);
         return -ENOTSUP;
     }
@@ -93,6 +94,17 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
     }
 #endif // DT_INST_NODE_HAS_PROP(0, power_gpios)
 
+    if (drv_data->gpio2) {
+        int raw = gpio_pin_get(drv_data->gpio, drv_cfg->chg_gpios.pin);
+        if (raw == -EIO || raw == -EWOULDBLOCK) {
+            LOG_DBG("Failed to read chg status: %d", raw);
+            return raw;
+        } else {
+            bool charging = raw;
+            drv_data->value.charging = charging;
+        }
+    }
+
     return rc;
 }
 
@@ -130,6 +142,21 @@ static int bvd_init(const struct device *dev) {
     }
 #endif // DT_INST_NODE_HAS_PROP(0, power_gpios)
 
+    if (drv_cfg->chg_gpios.label) {
+        drv_data->gpio2 = device_get_binding(drv_cfg->chg_gpios.label);
+        if (drv_data->gpio2 == NULL) {
+            LOG_ERR("Failed to get GPIO %s", drv_cfg->chg_gpios.label);
+            return -ENODEV;
+        }
+        rc = gpio_pin_configure(drv_data->gpio2, drv_cfg->chg_gpios.pin,
+                                GPIO_INPUT | drv_cfg->chg_gpios.flags);
+        if (rc != 0) {
+            LOG_ERR("Failed to configure input %s.%u: %d", drv_cfg->chg_gpios.label,
+                    drv_cfg->chg_gpios.pin, rc);
+            return rc;
+        }
+    }
+
     drv_data->as = (struct adc_sequence){
         .channels = BIT(0),
         .buffer = &drv_data->value.adc_raw,
@@ -166,6 +193,14 @@ static const struct bvd_config bvd_cfg = {
         },
 #if DT_INST_NODE_HAS_PROP(0, power_gpios)
     .power = GPIO_DT_SPEC_INST_GET(0, power_gpios),
+#endif
+#if DT_INST_NODE_HAS_PROP(0, chg_gpios)
+    .chg_gpios =
+        {
+            DT_INST_GPIO_LABEL(0, chg_gpios),
+            DT_INST_GPIO_PIN(0, chg_gpios),
+            DT_INST_GPIO_FLAGS(0, chg_gpios),
+        },
 #endif
     .output_ohm = DT_INST_PROP(0, output_ohms),
     .full_ohm = DT_INST_PROP(0, full_ohms),
