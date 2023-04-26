@@ -77,7 +77,7 @@ config BT_MAX_PAIRED
     default 6
 
 config BT_FILTER_ACCEPT_LIST
-	default y
+    default y
 
 #ZMK_SPLIT_BLE && ZMK_SPLIT_ROLE_CENTRAL
 endif
