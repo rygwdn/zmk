@@ -247,9 +247,9 @@ config ZMK_RGB_UNDERGLOW_SPD_START
 	default 3
 
 config ZMK_RGB_UNDERGLOW_EFF_START
-	int "RGB underglow start effect int value related to the effect enum list"
-	range 0 4
-	default 0
+    int "RGB underglow start effect int value related to the effect enum list"
+    range 0 4
+    default 0
 
 config ZMK_RGB_UNDERGLOW_ON_START
 	bool "RGB underglow starts on by default"
