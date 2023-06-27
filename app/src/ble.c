@@ -6,6 +6,8 @@
 
 #include <zephyr/device.h>
 #include <zephyr/init.h>
+#include <zephyr/kernel.h>
+#include <soc.h>
 
 #include <errno.h>
 #include <math.h>
@@ -19,6 +21,19 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/hci_err.h>
+
+#if IS_ENABLED(CONFIG_ZMK_BLE_CLEAR_BONDS_ON_START)
+#include <zephyr/drivers/flash.h>
+#include <zephyr/storage/flash_map.h>
+#include <zephyr/fs/nvs.h>
+
+static struct nvs_fs fs;
+
+#define NVS_PARTITION storage_partition
+#define NVS_PARTITION_DEVICE FIXED_PARTITION_DEVICE(NVS_PARTITION)
+#define NVS_PARTITION_OFFSET FIXED_PARTITION_OFFSET(NVS_PARTITION)
+
+#endif
 
 #if IS_ENABLED(CONFIG_SETTINGS)
 
@@ -585,6 +600,34 @@ static int zmk_ble_init(const struct device *_arg) {
     LOG_WRN("Clearing all existing BLE bond information from the keyboard");
 
     bt_unpair(BT_ID_DEFAULT, NULL);
+    uint8_t rc;
+    struct flash_pages_info info;
+
+    fs.flash_device = NVS_PARTITION_DEVICE;
+    if (!device_is_ready(fs.flash_device)) {
+        printk("Flash device %s is not ready\n", fs.flash_device->name);
+        return 0;
+    }
+    fs.offset = NVS_PARTITION_OFFSET;
+    rc = flash_get_page_info_by_offs(fs.flash_device, fs.offset, &info);
+    if (rc) {
+        printk("Unable to get page info\n");
+        return 0;
+    }
+    fs.sector_size = info.size;
+    fs.sector_count = 3U;
+
+    rc = nvs_mount(&fs);
+    if (rc) {
+        printk("Flash Init failed\n");
+        return 0;
+    }
+
+    rc = nvs_clear(&fs);
+    if (rc) {
+        printk("Flash yeet failed\n");
+        return 0;
+    }
 
     for (int i = 0; i < ZMK_BLE_PROFILE_COUNT; i++) {
         char setting_name[15];
