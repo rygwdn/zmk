@@ -1,0 +1,39 @@
+#ifndef ZEPHYR_INCLUDE_DRIVERS_SENSOR_GEN4_H_
+#define ZEPHYR_INCLUDE_DRIVERS_SENSOR_GEN4_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <zephyr/drivers/sensor.h>
+
+enum sensor_channel_gen4 {
+    SENSOR_CHAN_FINGERS = SENSOR_CHAN_PRIV_START,
+    SENSOR_CHAN_X_0,
+    SENSOR_CHAN_X_1,
+    SENSOR_CHAN_X_2,
+    SENSOR_CHAN_X_3,
+    SENSOR_CHAN_X_4,
+    SENSOR_CHAN_Y_0,
+    SENSOR_CHAN_Y_1,
+    SENSOR_CHAN_Y_2,
+    SENSOR_CHAN_Y_3,
+    SENSOR_CHAN_Y_4,
+    SENSOR_CHAN_PRESENT_0,
+    SENSOR_CHAN_PRESENT_1,
+    SENSOR_CHAN_PRESENT_2,
+    SENSOR_CHAN_PRESENT_3,
+    SENSOR_CHAN_PRESENT_4,
+    SENSOR_CHAN_PALM_0,
+    SENSOR_CHAN_PALM_1,
+    SENSOR_CHAN_PALM_2,
+    SENSOR_CHAN_PALM_3,
+    SENSOR_CHAN_PALM_4,
+    SENSOR_CHAN_BUTTONS,
+};
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
