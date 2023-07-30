@@ -6,4 +6,4 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 zephyr_library()
 
-zephyr_library_sources(gen4.c)
+zephyr_library_sources(azoteq.c)

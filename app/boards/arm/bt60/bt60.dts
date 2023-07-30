@@ -30,11 +30,11 @@
         diode-direction = "col2row";
 
         col-gpios
-            = <&gpio0 24 GPIO_ACTIVE_HIGH>
+            = <&gpio1 13 GPIO_ACTIVE_HIGH>
             ;
 
         row-gpios
-            = <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            = <&gpio1 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             ;
     };
 
@@ -122,11 +122,11 @@
     pinctrl-1 = <&i2c1_sleep>;
     pinctrl-names = "default", "sleep";
     clock-frequency = <I2C_BITRATE_FAST>;
-    trackpad: trackpad@2c {
-        compatible = "cirque,gen4";
+    trackpad: trackpad@74 {
+        compatible = "azoteq,pxm";
         status = "okay";
-        reg = <0x2C>;
-        dr-gpios = <&gpio0 17 (GPIO_ACTIVE_LOW)>;
+        reg = <0x74>;
+        dr-gpios = <&gpio1 11 (GPIO_ACTIVE_HIGH)>;
         rotate-90;
         sleep;
     };

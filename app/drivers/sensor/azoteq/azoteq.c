@@ -1,4 +1,4 @@
-#define DT_DRV_COMPAT cirque_gen4
+#define DT_DRV_COMPAT azoteq_pxm
 
 #include <zephyr/init.h>
 #include <zephyr/drivers/sensor.h>
