@@ -301,6 +301,10 @@ config ZMK_BACKLIGHT_AUTO_OFF_USB
 #ZMK_BACKLIGHT
 endif
 
+config ZMK_TRACKPAD
+    bool "Enable the trackpad HID reporting and processing"
+    default n
+
 #Display/LED Options
 endmenu
 

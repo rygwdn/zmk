@@ -111,7 +111,7 @@ static int gen4_channel_get(const struct device *dev, enum sensor_channel chan,
 }
 
 static int gen4_sample_fetch(const struct device *dev, enum sensor_channel) {
-    uint8_t packet[53];
+    uint8_t packet[54];
     int ret;
     ret = gen4_normal_read(dev, packet, 52);
     if (ret < 0) {
@@ -176,11 +176,11 @@ static int gen4_trigger_set(const struct device *dev, const struct sensor_trigge
 
 static void gen4_int_cb(const struct device *dev) {
     struct gen4_data *data = dev->data;
+    set_int(dev, false);
+
     LOG_DBG("Gen4 interrupt trigd: %d", 0);
-    gen4_sample_fetch(dev, 0);
     data->data_ready_handler(dev, data->data_ready_trigger);
     set_int(dev, true);
-    data->in_int = false;
 }
 
 #ifdef CONFIG_GEN4_TRIGGER_OWN_THREAD
@@ -203,6 +203,7 @@ static void gen4_work_cb(struct k_work *work) {
 static void gen4_gpio_cb(const struct device *port, struct gpio_callback *cb, uint32_t pins) {
     struct gen4_data *data = CONTAINER_OF(cb, struct gen4_data, gpio_cb);
     data->in_int = true;
+    LOG_DBG("Interrupt trigd");
 #if defined(CONFIG_GEN4_TRIGGER_OWN_THREAD)
     k_sem_give(&data->gpio_sem);
 #elif defined(CONFIG_GEN4_TRIGGER_GLOBAL_THREAD)
@@ -236,6 +237,7 @@ static int gen4_init(const struct device *dev) {
 #elif defined(CONFIG_GEN4_TRIGGER_GLOBAL_THREAD)
     k_work_init(&data->work, gen4_work_cb);
 #endif
+    set_int(dev, true);
 #endif
     LOG_WRN("inited");
     return 0;
