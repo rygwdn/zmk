@@ -47,13 +47,38 @@ enum {
 };
 
 static struct hids_report input = {
-    .id = 0x01,
+    .id = ZMK_REPORT_ID_KEYBOARD,
     .type = HIDS_INPUT,
 };
 
 static struct hids_report consumer_input = {
-    .id = 0x02,
+    .id = ZMK_REPORT_ID_CONSUMER,
     .type = HIDS_INPUT,
+};
+
+static struct hids_report trackpad_report = {
+    .id = ZMK_REPORT_ID_TOUCHPAD,
+    .type = HIDS_INPUT,
+};
+
+static struct hids_report trackpad_capabilities = {
+    .id = ZMK_REPORT_ID_FEATURE_PTP_CAPABILITIES,
+    .type = HIDS_FEATURE,
+};
+
+static struct hids_report trackpad_capabilities = {
+    .id = ZMK_REPORT_ID_FEATURE_PTPHQA,
+    .type = HIDS_FEATURE,
+};
+
+static struct hids_report trackpad_config = {
+    .id = ZMK_REPORT_ID_FEATURE_PTP_CONFIGURATION,
+    .type = HIDS_FEATURE,
+};
+
+static struct hids_report trackpad_selective = {
+    .id = ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE,
+    .type = HIDS_FEATURE,
 };
 
 static bool host_requests_notification = false;
@@ -92,6 +117,49 @@ static ssize_t read_hids_consumer_input_report(struct bt_conn *conn,
     return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
                              sizeof(struct zmk_hid_consumer_report_body));
 }
+
+static ssize_t read_hids_trackpad_input_report(struct bt_conn *conn,
+                                               const struct bt_gatt_attr *attr, void *buf,
+                                               uint16_t len, uint16_t offset) {
+    struct zmk_hid_trackpad_report_body *report_body = &zmk_hid_get_trackpad_report()->body;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+                             sizeof(struct zmk_hid_consumer_report_body));
+}
+// TODO
+static ssize_t read_hids_trackpad_capabilities_input_report(struct bt_conn *conn,
+                                                            const struct bt_gatt_attr *attr,
+                                                            void *buf, uint16_t len,
+                                                            uint16_t offset) {
+    struct zmk_hid_consumer_report_body *report_body = &zmk_hid_get_consumer_report()->body;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+                             sizeof(struct zmk_hid_consumer_report_body));
+}
+
+static ssize_t read_hids_consumer_input_report(struct bt_conn *conn,
+                                               const struct bt_gatt_attr *attr, void *buf,
+                                               uint16_t len, uint16_t offset) {
+    struct zmk_hid_consumer_report_body *report_body = &zmk_hid_get_consumer_report()->body;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+                             sizeof(struct zmk_hid_consumer_report_body));
+}
+
+static ssize_t read_hids_consumer_input_report(struct bt_conn *conn,
+                                               const struct bt_gatt_attr *attr, void *buf,
+                                               uint16_t len, uint16_t offset) {
+    struct zmk_hid_consumer_report_body *report_body = &zmk_hid_get_consumer_report()->body;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+                             sizeof(struct zmk_hid_consumer_report_body));
+}
+
+static ssize_t read_hids_consumer_input_report(struct bt_conn *conn,
+                                               const struct bt_gatt_attr *attr, void *buf,
+                                               uint16_t len, uint16_t offset) {
+    struct zmk_hid_consumer_report_body *report_body = &zmk_hid_get_consumer_report()->body;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+                             sizeof(struct zmk_hid_consumer_report_body));
+}
+
+// ENDTODO
 
 // static ssize_t write_proto_mode(struct bt_conn *conn,
 //                                 const struct bt_gatt_attr *attr,
@@ -134,6 +202,31 @@ BT_GATT_SERVICE_DEFINE(
     BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
                        NULL, &input),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
+    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                       NULL, &consumer_input),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
+    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                       NULL, &consumer_input),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
+    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                       NULL, &consumer_input),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
+    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                       NULL, &consumer_input),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
+    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                       NULL, &consumer_input),
     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
                            BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
     BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),

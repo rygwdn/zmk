@@ -301,12 +301,58 @@ config ZMK_BACKLIGHT_AUTO_OFF_USB
 #ZMK_BACKLIGHT
 endif
 
-config ZMK_TRACKPAD
-    bool "Enable the trackpad HID reporting and processing"
-    default n
-
 #Display/LED Options
 endmenu
+
+menuconfig ZMK_TRACKPAD
+    bool "Enable ZMK trackpad emulation"
+    default n
+
+config ZMK_TRACKPAD_TICK_DURATION
+    int "Trackpad tick duration in ms"
+    default 8
+
+config ZMK_TRACKPAD_MAX_FINGERS
+    int "Maximum number of fingers reported in PTP"
+    range 3 5
+    default 5
+
+config ZMK_TRACKPAD_PHYSICAL_X
+    int "Maximum X size of trackpad in 0.1cm increments"
+    default 600
+
+config ZMK_TRACKPAD_PHYSICAL_Y
+    int "Maximum Y size of trackpad in 0.1cm increments"
+    default 600
+
+
+if ZMK_TRACKPAD
+
+choice ZMK_TRACKPAD_WORK_QUEUE
+    prompt "Work queue selection for trackpad events"
+    default ZMK_TRACKPAD_WORK_QUEUE_DEDICATED
+
+config ZMK_TRACKPAD_WORK_QUEUE_SYSTEM
+    bool "Use default system work queue for trackpad events"
+
+config ZMK_TRACKPAD_WORK_QUEUE_DEDICATED
+    bool "Use dedicated work queue for trackpad events"
+
+endchoice
+
+if ZMK_TRACKPAD_WORK_QUEUE_DEDICATED
+
+config ZMK_TRACKPAD_DEDICATED_THREAD_STACK_SIZE
+    int "Stack size for dedicated trackpad thread/queue"
+    default 2048
+
+config ZMK_TRACKPAD_DEDICATED_THREAD_PRIORITY
+    int "Thread priority for dedicated trackpad thread/queue"
+    default 3
+
+endif # ZMK_TRACKPAD_WORK_QUEUE_DEDICATED
+
+endif
 
 menu "Power Management"
 

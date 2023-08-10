@@ -14,15 +14,13 @@
 #define GEN4_ADDRESS 0x2C
 
 struct gen4_finger_data {
-    bool present;
-    bool palm;
+    uint8_t confidence_tip;
     uint16_t x, y;
 };
 
 struct gen4_data {
-    uint8_t contacts;
-    uint8_t btns;
-    struct gen4_finger_data fingers[5];
+    uint8_t contacts, btns, finger_id;
+    struct gen4_finger_data finger;
     bool in_int;
 #ifdef CONFIG_GEN4_TRIGGER
     const struct device *dev;
@@ -43,7 +41,7 @@ struct gen4_config {
 #if DT_INST_ON_BUS(0, i2c)
     const struct i2c_dt_spec bus;
 #endif
-    bool rotate_90, sleep_en, no_taps;
+    bool rotate_90;
 #ifdef CONFIG_GEN4_TRIGGER
     const struct gpio_dt_spec dr;
 #endif

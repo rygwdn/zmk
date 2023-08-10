@@ -38,68 +38,20 @@ static int gen4_channel_get(const struct device *dev, enum sensor_channel chan,
                             struct sensor_value *val) {
     const struct gen4_data *data = dev->data;
     switch ((enum sensor_channel_gen4)chan) {
-    case SENSOR_CHAN_FINGERS:
+    case SENSOR_CHAN_CONTACTS:
         val->val1 = data->contacts;
         break;
-    case SENSOR_CHAN_X_0:
-        val->val1 = data->fingers[0].x;
+    case SENSOR_CHAN_X:
+        val->val1 = data->finger.x;
         break;
-    case SENSOR_CHAN_X_1:
-        val->val1 = data->fingers[1].x;
+    case SENSOR_CHAN_Y:
+        val->val1 = data->finger.y;
         break;
-    case SENSOR_CHAN_X_2:
-        val->val1 = data->fingers[2].x;
+    case SENSOR_CHAN_CONFIDENCE_TIP:
+        val->val1 = data->finger.confidence_tip;
         break;
-    case SENSOR_CHAN_X_3:
-        val->val1 = data->fingers[3].x;
-        break;
-    case SENSOR_CHAN_X_4:
-        val->val1 = data->fingers[4].x;
-        break;
-    case SENSOR_CHAN_Y_0:
-        val->val1 = data->fingers[0].y;
-        break;
-    case SENSOR_CHAN_Y_1:
-        val->val1 = data->fingers[1].y;
-        break;
-    case SENSOR_CHAN_Y_2:
-        val->val1 = data->fingers[2].y;
-        break;
-    case SENSOR_CHAN_Y_3:
-        val->val1 = data->fingers[3].y;
-        break;
-    case SENSOR_CHAN_Y_4:
-        val->val1 = data->fingers[4].y;
-        break;
-    case SENSOR_CHAN_PRESENT_0:
-        val->val1 = data->fingers[0].present;
-        break;
-    case SENSOR_CHAN_PRESENT_1:
-        val->val1 = data->fingers[1].present;
-        break;
-    case SENSOR_CHAN_PRESENT_2:
-        val->val1 = data->fingers[2].present;
-        break;
-    case SENSOR_CHAN_PRESENT_3:
-        val->val1 = data->fingers[3].present;
-        break;
-    case SENSOR_CHAN_PRESENT_4:
-        val->val1 = data->fingers[4].present;
-        break;
-    case SENSOR_CHAN_PALM_0:
-        val->val1 = data->fingers[0].palm;
-        break;
-    case SENSOR_CHAN_PALM_1:
-        val->val1 = data->fingers[1].palm;
-        break;
-    case SENSOR_CHAN_PALM_2:
-        val->val1 = data->fingers[2].palm;
-        break;
-    case SENSOR_CHAN_PALM_3:
-        val->val1 = data->fingers[3].palm;
-        break;
-    case SENSOR_CHAN_PALM_4:
-        val->val1 = data->fingers[4].palm;
+    case SENSOR_CHAN_FINGER:
+        val->val1 = data->finger_id;
         break;
     case SENSOR_CHAN_BUTTONS:
         val->val1 = data->btns;
@@ -134,18 +86,16 @@ static int gen4_sample_fetch(const struct device *dev, enum sensor_channel) {
         data->btns = packet[12];
     }
 
-    uint8_t finger_id = (packet[3] & 0xFC) >> 2;
-    LOG_DBG("FINGER ID: %d", finger_id);
+    data->finger_id = (packet[3] & 0xFC) >> 2;
+    LOG_DBG("FINGER ID: %d", data->finger_id);
     // Finger data
-    data->fingers[finger_id].present = (packet[3] & 0x02) >> 1;
-    data->fingers[finger_id].palm = packet[3] & 0x01;
-    data->fingers[finger_id].x = (uint16_t)packet[4] | (uint16_t)(packet[5] << 8);
-    data->fingers[finger_id].y = (uint16_t)packet[6] | (uint16_t)(packet[7] << 8);
+    data->finger.confidence_tip = (packet[3] & 0x03);
+    data->finger.x = (uint16_t)packet[4] | (uint16_t)(packet[5] << 8);
+    data->finger.y = (uint16_t)packet[6] | (uint16_t)(packet[7] << 8);
 
-    LOG_DBG("Finger detected: %d", data->fingers[finger_id].present);
-    LOG_DBG("Finger palm: %d", data->fingers[finger_id].palm);
-    LOG_DBG("Finger x: %d", data->fingers[finger_id].x);
-    LOG_DBG("Finger y: %d", data->fingers[finger_id].y);
+    LOG_DBG("Finger palm/detected: %h", data->finger.confidence_tip);
+    LOG_DBG("Finger x: %d", data->finger.x);
+    LOG_DBG("Finger y: %d", data->finger.y);
 
     return 0;
 }
