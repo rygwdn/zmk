@@ -164,7 +164,7 @@ int zmk_endpoints_send_ptp_report() {
 
 #if IS_ENABLED(CONFIG_ZMK_BLE)
     case ZMK_ENDPOINT_BLE: {
-#if IS_ENABLED(CONFIG_ZMK_MOUSE_WORK_QUEUE_DEDICATED)
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
         int err = zmk_hog_send_ptp_report_direct(&ptp_report->body);
 #else
         int err = zmk_hog_send_ptp_report(&ptp_report->body);

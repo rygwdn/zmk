@@ -13,4 +13,7 @@ int zmk_hog_init();
 
 int zmk_hog_send_keyboard_report(struct zmk_hid_keyboard_report_body *body);
 int zmk_hog_send_consumer_report(struct zmk_hid_consumer_report_body *body);
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 int zmk_hog_send_ptp_report(struct zmk_hid_ptp_report_body *body);
+int zmk_hog_send_ptp_report_direct(struct zmk_hid_ptp_report_body *report);
+#endif

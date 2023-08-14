@@ -428,7 +428,7 @@ int zmk_hid_release(uint32_t usage);
 bool zmk_hid_is_pressed(uint32_t usage);
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count, uint8_t buttons);
+void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count);
 #endif
 
 struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report();

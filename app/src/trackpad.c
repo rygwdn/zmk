@@ -60,7 +60,7 @@ static void zmk_trackpad_tick(struct k_work *work) {
         for (int i = 0; i < CONFIG_ZMK_TRACKPAD_MAX_FINGERS; i++)
             if (contacts_to_send & BIT(i)) {
                 LOG_DBG("Trackpad sendy thing trigd %d", i);
-                zmk_hid_ptp_set(fingers[i], present_contacts, 0);
+                zmk_hid_ptp_set(fingers[i], present_contacts);
                 zmk_endpoints_send_ptp_report();
                 contacts_to_send &= !BIT(i);
                 return;
