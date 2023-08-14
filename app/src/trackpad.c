@@ -12,7 +12,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 const struct device *trackpad = DEVICE_DT_GET(DT_INST(0, cirque_gen4));
 
 static zmk_trackpad_finger_contacts_t present_contacts = 0;
-static bool changes = 0;
+static zmk_trackpad_finger_contacts_t contacts_to_send = 0;
 
 static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
 
@@ -51,16 +51,20 @@ static void handle_trackpad(const struct device *dev, const struct sensor_trigge
     fingers[id.val1].contact_id = id.val1;
     fingers[id.val1].x = x.val1;
     fingers[id.val1].y = y.val1;
-    changes = true;
+    contacts_to_send |= BIT(id.val1);
 }
 
 static void zmk_trackpad_tick(struct k_work *work) {
-    if (changes) {
+    if (contacts_to_send) {
         // LOG_DBG("Trackpad sendy thing trigd %d", 0);
-
-        zmk_hid_ptp_set(fingers[0], present_contacts, 0);
-        zmk_endpoints_send_ptp_report();
-        changes = false;
+        for (int i = 0; i < CONFIG_ZMK_TRACKPAD_MAX_FINGERS; i++)
+            if (contacts_to_send & BIT(i)) {
+                LOG_DBG("Trackpad sendy thing trigd %d", i);
+                zmk_hid_ptp_set(fingers[i], present_contacts, 0);
+                zmk_endpoints_send_ptp_report();
+                contacts_to_send &= !BIT(i);
+                return;
+            }
     }
 }
 

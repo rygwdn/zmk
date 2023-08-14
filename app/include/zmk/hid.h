@@ -99,7 +99,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_INPUT(0x00),
     HID_END_COLLECTION,
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-    //  PTP Touchpad HID from osmakari
+    //  PTP Touchpad HID with inspiration from osmakari
     /* USAGE_PAGE (Digitizers) */
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
     /* USAGE (Touch Pad) */
@@ -154,7 +154,8 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* LOGICAL_MINIMUM (0) */
     HID_LOGICAL_MIN8(0),
     /* LOGICAL_MAXIMUM (4095) */
-    HID_LOGICAL_MAX16(0xFF, 0x0F),
+    HID_LOGICAL_MAX16((CONFIG_ZMK_TRACKPAD_LOGICAL_X & 0xFF),
+                      ((CONFIG_ZMK_TRACKPAD_LOGICAL_X >> 8) & 0xFF)),
     /* REPORT_SIZE (16) */
     HID_REPORT_SIZE(16),
     /* UNIT_EXPONENT (-2) */
@@ -177,7 +178,8 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
     // Logimax
-    HID_LOGICAL_MAX16(0xFF, 0x0F),
+    HID_LOGICAL_MAX16((CONFIG_ZMK_TRACKPAD_LOGICAL_Y & 0xFF),
+                      ((CONFIG_ZMK_TRACKPAD_LOGICAL_Y >> 8) & 0xFF)),
     /* PHYSICAL_MAXIMUM (Defined in config) */
     0x46,
     (CONFIG_ZMK_TRACKPAD_PHYSICAL_Y & 0xFF),

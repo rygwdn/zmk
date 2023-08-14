@@ -329,6 +329,14 @@ config ZMK_TRACKPAD_PHYSICAL_Y
     int "Maximum Y size of trackpad in 0.1cm increments"
     default 600
 
+config ZMK_TRACKPAD_LOGICAL_X
+    int "Maximum X coordinate value trackpad can report"
+    default 4095
+
+config ZMK_TRACKPAD_LOGICAL_Y
+    int "Maximum Y coordinate value trackpad can report"
+    default 4095
+
 
 if ZMK_TRACKPAD
 
