@@ -87,15 +87,15 @@ static int gen4_sample_fetch(const struct device *dev, enum sensor_channel) {
     }
 
     data->finger_id = (packet[3] & 0xFC) >> 2;
-    LOG_DBG("FINGER ID: %d", data->finger_id);
-    //  Finger data
+    // LOG_DBG("FINGER ID: %d", data->finger_id);
+    //   Finger data
     data->finger.confidence_tip = (packet[3] & 0x03);
     data->finger.x = (uint16_t)packet[4] | (uint16_t)(packet[5] << 8);
     data->finger.y = (uint16_t)packet[6] | (uint16_t)(packet[7] << 8);
 
-    LOG_DBG("Finger palm/detected: %d", data->finger.confidence_tip);
-    LOG_DBG("Finger x: %d", data->finger.x);
-    LOG_DBG("Finger y: %d", data->finger.y);
+    // LOG_DBG("Finger palm/detected: %d", data->finger.confidence_tip);
+    // LOG_DBG("Finger x: %d", data->finger.x);
+    // LOG_DBG("Finger y: %d", data->finger.y);
 
     return 0;
 }
@@ -103,8 +103,8 @@ static int gen4_sample_fetch(const struct device *dev, enum sensor_channel) {
 #ifdef CONFIG_GEN4_TRIGGER
 static void set_int(const struct device *dev, const bool en) {
     const struct gen4_config *config = dev->config;
-    int ret = gpio_pin_interrupt_configure_dt(&config->dr,
-                                              en ? GPIO_INT_EDGE_TO_ACTIVE : GPIO_INT_DISABLE);
+    int ret =
+        gpio_pin_interrupt_configure_dt(&config->dr, en ? GPIO_INT_LEVEL_ACTIVE : GPIO_INT_DISABLE);
     if (ret < 0) {
         LOG_ERR("can't set interrupt");
     }
@@ -137,7 +137,7 @@ static void gen4_int_cb(const struct device *dev) {
 static void gen4_thread(void *arg) {
     const struct device *dev = arg;
     struct gen4_data *data = dev->data;
-    // set_int(dev, false);
+    set_int(dev, false);
     while (1) {
         k_sem_take(&data->gpio_sem, K_FOREVER);
         gen4_int_cb(dev);
@@ -152,7 +152,7 @@ static void gen4_work_cb(struct k_work *work) {
 
 static void gen4_gpio_cb(const struct device *port, struct gpio_callback *cb, uint32_t pins) {
     struct gen4_data *data = CONTAINER_OF(cb, struct gen4_data, gpio_cb);
-    // set_int(data->dev, false);
+    set_int(data->dev, false);
     LOG_DBG("Interrupt trigd");
 #if defined(CONFIG_GEN4_TRIGGER_OWN_THREAD)
     k_sem_give(&data->gpio_sem);
