@@ -57,7 +57,7 @@ static struct hids_report consumer_input = {
 };
 
 static struct hids_report trackpad_report = {
-    .id = ZMK_REPORT_ID_TOUCHPAD,
+    .id = ZMK_REPORT_ID_TRACKPAD,
     .type = HIDS_INPUT,
 };
 
@@ -66,7 +66,7 @@ static struct hids_report trackpad_capabilities = {
     .type = HIDS_FEATURE,
 };
 
-static struct hids_report trackpad_capabilities = {
+static struct hids_report trackpad_hqa = {
     .id = ZMK_REPORT_ID_FEATURE_PTPHQA,
     .type = HIDS_FEATURE,
 };
@@ -121,11 +121,12 @@ static ssize_t read_hids_consumer_input_report(struct bt_conn *conn,
 static ssize_t read_hids_trackpad_input_report(struct bt_conn *conn,
                                                const struct bt_gatt_attr *attr, void *buf,
                                                uint16_t len, uint16_t offset) {
-    struct zmk_hid_trackpad_report_body *report_body = &zmk_hid_get_trackpad_report()->body;
+    struct zmk_hid_ptp_report_body *report_body = &zmk_hid_get_ptp_report()->body;
     return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
                              sizeof(struct zmk_hid_consumer_report_body));
 }
 // TODO
+/*
 static ssize_t read_hids_trackpad_capabilities_input_report(struct bt_conn *conn,
                                                             const struct bt_gatt_attr *attr,
                                                             void *buf, uint16_t len,
@@ -158,7 +159,7 @@ static ssize_t read_hids_consumer_input_report(struct bt_conn *conn,
     return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
                              sizeof(struct zmk_hid_consumer_report_body));
 }
-
+*/
 // ENDTODO
 
 // static ssize_t write_proto_mode(struct bt_conn *conn,
@@ -208,30 +209,30 @@ BT_GATT_SERVICE_DEFINE(
     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
                        NULL, &consumer_input),
     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
-                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+                           BT_GATT_PERM_READ_ENCRYPT, read_hids_trackpad_input_report, NULL, NULL),
     BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
-                       NULL, &consumer_input),
-    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
-                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
-    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
-    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
-                       NULL, &consumer_input),
-    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
-                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
-    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
-    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
-                       NULL, &consumer_input),
-    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
-                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
-    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
-    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
-                       NULL, &consumer_input),
-    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
-                           BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
-    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
-    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
-                       NULL, &consumer_input),
+                       NULL, &trackpad_report), /*
+     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                            BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+     BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
+     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                        NULL, &consumer_input),
+     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                            BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+     BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
+     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                        NULL, &consumer_input),
+     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                            BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+     BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
+     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                        NULL, &consumer_input),
+     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
+                            BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),
+     BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
+     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                        NULL, &consumer_input),*/
     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_CTRL_POINT, BT_GATT_CHRC_WRITE_WITHOUT_RESP,
                            BT_GATT_PERM_WRITE, NULL, write_ctrl_point, &ctrl_point));
 
@@ -350,6 +351,76 @@ int zmk_hog_send_consumer_report(struct zmk_hid_consumer_report_body *report) {
     }
 
     k_work_submit_to_queue(&hog_work_q, &hog_consumer_work);
+
+    return 0;
+};
+
+K_MSGQ_DEFINE(zmk_hog_ptp_msgq, sizeof(struct zmk_hid_ptp_report_body),
+              CONFIG_ZMK_BLE_PTP_REPORT_QUEUE_SIZE, 4);
+
+void send_ptp_report_callback(struct k_work *work) {
+    struct zmk_hid_ptp_report_body report;
+    while (k_msgq_get(&zmk_hog_ptp_msgq, &report, K_NO_WAIT) == 0) {
+        struct bt_conn *conn = destination_connection();
+        if (conn == NULL) {
+            return;
+        }
+
+        struct bt_gatt_notify_params notify_params = {
+            .attr = &hog_svc.attrs[13],
+            .data = &report,
+            .len = sizeof(report),
+        };
+
+        int err = bt_gatt_notify_cb(conn, &notify_params);
+        if (err) {
+            LOG_DBG("Error notifying %d", err);
+        }
+
+        bt_conn_unref(conn);
+    }
+};
+
+K_WORK_DEFINE(hog_ptp_work, send_ptp_report_callback);
+
+int zmk_hog_send_ptp_report(struct zmk_hid_ptp_report_body *report) {
+    int err = k_msgq_put(&zmk_hog_ptp_msgq, report, K_NO_WAIT);
+    if (err) {
+        switch (err) {
+        case -EAGAIN: {
+            LOG_WRN("Mouse message queue full, dropping report");
+            return err;
+        }
+        default:
+            LOG_WRN("Failed to queue ptp report to send (%d)", err);
+            return err;
+        }
+    }
+
+    k_work_submit_to_queue(&hog_work_q, &hog_ptp_work);
+
+    return 0;
+};
+
+int zmk_hog_send_ptp_report_direct(struct zmk_hid_ptp_report_body *report) {
+    struct bt_conn *conn = destination_connection();
+    if (conn == NULL) {
+        return 1;
+    }
+
+    struct bt_gatt_notify_params notify_params = {
+        .attr = &hog_svc.attrs[13],
+        .data = report,
+        .len = sizeof(*report),
+    };
+
+    int err = bt_gatt_notify_cb(conn, &notify_params);
+    if (err) {
+        LOG_DBG("Error notifying %d", err);
+        return err;
+    }
+
+    bt_conn_unref(conn);
 
     return 0;
 };

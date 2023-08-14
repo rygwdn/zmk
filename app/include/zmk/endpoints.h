@@ -13,3 +13,6 @@ int zmk_endpoints_toggle();
 enum zmk_endpoint zmk_endpoints_selected();
 
 int zmk_endpoints_send_report(uint16_t usage_page);
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+int zmk_endpoints_send_ptp_report();
+#endif

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 
 typedef uint8_t zmk_trackpad_finger_contacts_t;
 

@@ -63,7 +63,7 @@ static int gen4_channel_get(const struct device *dev, enum sensor_channel chan,
 }
 
 static int gen4_sample_fetch(const struct device *dev, enum sensor_channel) {
-    uint8_t packet[54];
+    uint8_t packet[53];
     int ret;
     ret = gen4_normal_read(dev, packet, 52);
     if (ret < 0) {
@@ -88,12 +88,12 @@ static int gen4_sample_fetch(const struct device *dev, enum sensor_channel) {
 
     data->finger_id = (packet[3] & 0xFC) >> 2;
     LOG_DBG("FINGER ID: %d", data->finger_id);
-    // Finger data
+    //  Finger data
     data->finger.confidence_tip = (packet[3] & 0x03);
     data->finger.x = (uint16_t)packet[4] | (uint16_t)(packet[5] << 8);
     data->finger.y = (uint16_t)packet[6] | (uint16_t)(packet[7] << 8);
 
-    LOG_DBG("Finger palm/detected: %h", data->finger.confidence_tip);
+    LOG_DBG("Finger palm/detected: %d", data->finger.confidence_tip);
     LOG_DBG("Finger x: %d", data->finger.x);
     LOG_DBG("Finger y: %d", data->finger.y);
 
@@ -126,10 +126,10 @@ static int gen4_trigger_set(const struct device *dev, const struct sensor_trigge
 
 static void gen4_int_cb(const struct device *dev) {
     struct gen4_data *data = dev->data;
-    set_int(dev, false);
 
-    LOG_DBG("Gen4 interrupt trigd: %d", 0);
+    // LOG_DBG("Gen4 interrupt trigd: %d", 0);
     data->data_ready_handler(dev, data->data_ready_trigger);
+    LOG_DBG("Setting int on %d", 0);
     set_int(dev, true);
 }
 
@@ -137,7 +137,7 @@ static void gen4_int_cb(const struct device *dev) {
 static void gen4_thread(void *arg) {
     const struct device *dev = arg;
     struct gen4_data *data = dev->data;
-
+    // set_int(dev, false);
     while (1) {
         k_sem_take(&data->gpio_sem, K_FOREVER);
         gen4_int_cb(dev);
@@ -152,7 +152,7 @@ static void gen4_work_cb(struct k_work *work) {
 
 static void gen4_gpio_cb(const struct device *port, struct gpio_callback *cb, uint32_t pins) {
     struct gen4_data *data = CONTAINER_OF(cb, struct gen4_data, gpio_cb);
-    data->in_int = true;
+    // set_int(data->dev, false);
     LOG_DBG("Interrupt trigd");
 #if defined(CONFIG_GEN4_TRIGGER_OWN_THREAD)
     k_sem_give(&data->gpio_sem);
@@ -189,7 +189,6 @@ static int gen4_init(const struct device *dev) {
 #endif
     set_int(dev, true);
 #endif
-    LOG_WRN("inited");
     return 0;
 }
 
@@ -206,8 +205,6 @@ static const struct sensor_driver_api gen4_driver_api = {
     static const struct gen4_config gen4_config_##n = {                                            \
         .bus = I2C_DT_SPEC_INST_GET(n),                                                            \
         .rotate_90 = DT_INST_PROP(0, rotate_90),                                                   \
-        .sleep_en = DT_INST_PROP(0, sleep),                                                        \
-        .no_taps = DT_INST_PROP(0, no_taps),                                                       \
         COND_CODE_1(CONFIG_GEN4_TRIGGER, (.dr = GPIO_DT_SPEC_GET(DT_DRV_INST(0), dr_gpios), ),     \
                     ())};                                                                          \
     DEVICE_DT_INST_DEFINE(n, gen4_init, NULL, &gen4_data_##n, &gen4_config_##n, POST_KERNEL,       \

@@ -109,7 +109,7 @@ static const uint8_t zmk_hid_report_desc[] = {
 
     /* Windows Precision Touchpad Input Reports */
 
-    /* REPORT_ID (0x06) */
+    /* REPORT_ID (0x05) */
     HID_REPORT_ID(ZMK_REPORT_ID_TRACKPAD),
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
@@ -129,20 +129,24 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_SIZE(1),
     /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
+    // Padding for bytes
+    HID_REPORT_COUNT(6),
+    /* INPUT (Cnst,Var,Abs) */
+    HID_INPUT(0x03),
     /* REPORT_COUNT (1) */
     HID_REPORT_COUNT(1),
-    /* REPORT_SIZE (2) */
-    HID_REPORT_SIZE(2),
-    /* LOGICAL_MAXIMUM (2) */
-    HID_LOGICAL_MAX8(2),
+    /* REPORT_SIZE (3) */
+    HID_REPORT_SIZE(3),
+    /* LOGICAL_MAXIMUM (24 */
+    HID_LOGICAL_MAX8(5),
     /* USAGE (Contact Identifier) */
     HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_IDENTIFIER),
     /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
     /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
-    /* REPORT_COUNT (4) */
-    HID_REPORT_COUNT(4),
+    /* REPORT_COUNT (byte padding) */
+    HID_REPORT_COUNT(5),
     /* INPUT (Cnst,Var,Abs) */
     HID_INPUT(0x03),
     /* USAGE_PAGE(Generic Desktop) */
@@ -172,6 +176,8 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_COUNT(1),
     /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
+    // Logimax
+    HID_LOGICAL_MAX16(0xFF, 0x0F),
     /* PHYSICAL_MAXIMUM (Defined in config) */
     0x46,
     (CONFIG_ZMK_TRACKPAD_PHYSICAL_Y & 0xFF),
@@ -182,8 +188,6 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_INPUT(0x02),
     /* END_COLLECTION */
     HID_END_COLLECTION,
-    /* INPUT (Data, Var, Abs) */
-    HID_INPUT(0x02),
     /* USAGE_PAGE (Digitizers) */
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
     /* USAGE (Contact count) */
@@ -196,22 +200,6 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_SIZE(8),
     /* INPUT(Data, Var, Abs) */
     HID_INPUT(0x02),
-    /* USAGE_PAGE (Button) */
-    HID_USAGE_PAGE(HID_USAGE_BUTTON),
-    /* USAGE (Button 1) */
-    HID_USAGE(0x01),
-    /* LOGICAL_MAXIMUM (1) */
-    HID_LOGICAL_MAX8(1),
-    /* REPORT_SIZE (1) */
-    HID_REPORT_SIZE(1),
-    /* REPORT_COUNT (1) */
-    HID_REPORT_COUNT(1),
-    /* INPUT (Data, Var, Abs) */
-    HID_INPUT(0x02),
-    /* REPORT_COUNT (7) */
-    HID_REPORT_COUNT(7),
-    /* INPUT (Cnst, Var, Abs) */
-    HID_INPUT(0x03),
 
     /* Device Capabilities Feature Report */
 
@@ -265,7 +253,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* HID_COLLECTION */
     HID_COLLECTION(HID_COLLECTION_APPLICATION),
     /* REPORT_ID (Feature 0x09) */
-    HID_REPORT_ID(ZMK_REPORT_ID_FEATURE_CONFIGURATION),
+    HID_REPORT_ID(ZMK_REPORT_ID_FEATURE_PTP_CONFIGURATION),
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Logical) */
@@ -350,7 +338,7 @@ struct zmk_hid_consumer_report {
     struct zmk_hid_consumer_report_body body;
 } __packed;
 
-#ifdef IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 // Reporting structure from osmakari
 // Report for single finger
 struct zmk_ptp_finger {
@@ -364,16 +352,21 @@ struct zmk_ptp_finger {
     uint16_t y;
 } __packed;
 
-// Report containing finger data
-struct zmk_ptp_report {
-    // 0x05
-    uint8_t report_id;
+struct zmk_hid_ptp_report_body {
     // Finger reporting
-    struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
+    struct zmk_ptp_finger finger;
     // Contact count
     uint8_t contact_count;
     // Buttons
-    uint8_t buttons;
+    // uint8_t buttons;
+} __packed;
+
+// Report containing finger data
+struct zmk_hid_ptp_report {
+    // 0x05
+    uint8_t report_id;
+    struct zmk_hid_ptp_report_body body;
+
 } __packed;
 
 // Feature report for configuration
@@ -387,7 +380,7 @@ struct zmk_ptp_feature_configuration {
 
 // Feature report for certification
 struct zmk_ptp_feature_certification {
-    uint8_t[256] ptphqa_blob;
+    uint8_t ptphqa_blob[256];
 } __packed;
 
 #define PTP_PAD_TYPE_DEPRESSIBLE 0x00
@@ -433,8 +426,7 @@ int zmk_hid_release(uint32_t usage);
 bool zmk_hid_is_pressed(uint32_t usage);
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-void zmk_hid_ptp_set(struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS],
-                     uint8_t contact_count, uint8_t buttons);
+void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count, uint8_t buttons);
 #endif
 
 struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report();

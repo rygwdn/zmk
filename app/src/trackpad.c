@@ -12,9 +12,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 const struct device *trackpad = DEVICE_DT_GET(DT_INST(0, cirque_gen4));
 
 static zmk_trackpad_finger_contacts_t present_contacts = 0;
-static zmk_trackpad_finger_contacts_t old_contacts = 0;
-static zmk_trackpad_finger_contacts_t changed_contacts = 0;
-static zmk_trackpad_finger_contacts_t contacts_to_read = 0;
+static bool changes = 0;
 
 static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
 
@@ -32,14 +30,13 @@ struct k_work_q *zmk_trackpad_work_q() {
 }
 
 static void handle_trackpad(const struct device *dev, const struct sensor_trigger *trig) {
-    static uint8_t last_pressed = 0;
     int ret = sensor_sample_fetch(dev);
     if (ret < 0) {
         LOG_ERR("fetch: %d", ret);
         return;
     }
     LOG_DBG("Trackpad handler trigd %d", 0);
-    // Is there a better way to do this?
+
     struct sensor_value contacts, confidence_tip, id, x, y;
     sensor_channel_get(dev, SENSOR_CHAN_CONTACTS, &contacts);
     // expects bitmap format
@@ -54,15 +51,23 @@ static void handle_trackpad(const struct device *dev, const struct sensor_trigge
     fingers[id.val1].contact_id = id.val1;
     fingers[id.val1].x = x.val1;
     fingers[id.val1].y = y.val1;
-    k_work_submit_to_queue(&zmk_trackpad_work_q, &trackpad_work);
+    changes = true;
 }
 
-static void zmk_trackpad_tick(struct k_work *work) {}
+static void zmk_trackpad_tick(struct k_work *work) {
+    if (changes) {
+        // LOG_DBG("Trackpad sendy thing trigd %d", 0);
+
+        zmk_hid_ptp_set(fingers[0], present_contacts, 0);
+        zmk_endpoints_send_ptp_report();
+        changes = false;
+    }
+}
 
 K_WORK_DEFINE(trackpad_work, zmk_trackpad_tick);
 
 static void zmk_trackpad_tick_handler(struct k_timer *timer) {
-    k_work_submit_to_queue(&zmk_trackpad_work_q, &trackpad_work);
+    k_work_submit_to_queue(zmk_trackpad_work_q(), &trackpad_work);
 }
 
 K_TIMER_DEFINE(trackpad_tick, zmk_trackpad_tick_handler, NULL);
@@ -76,10 +81,11 @@ static int trackpad_init() {
         LOG_ERR("can't set trigger");
         return -EIO;
     };
+    k_timer_start(&trackpad_tick, K_NO_WAIT, K_MSEC(CONFIG_ZMK_TRACKPAD_TICK_DURATION));
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
-    k_work_q_start(&trackpad_work_q, trackpad_work_stack_area,
-                   K_THREAD_STACK_SIZEOF(trackpad_work_stack_area),
-                   CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_PRIORITY);
+    k_work_queue_start(&trackpad_work_q, trackpad_work_stack_area,
+                       K_THREAD_STACK_SIZEOF(trackpad_work_stack_area),
+                       CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_PRIORITY, NULL);
 #endif
     return 0;
 }
