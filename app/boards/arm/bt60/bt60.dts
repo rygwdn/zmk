@@ -127,6 +127,5 @@
         status = "okay";
         reg = <0x2C>;
         dr-gpios = <&gpio0 17 GPIO_ACTIVE_LOW>;
-        rotate-90;
     };
     };

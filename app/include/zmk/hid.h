@@ -199,8 +199,20 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* REPORT_COUNT (1) */
     HID_REPORT_COUNT(1),
     /* REPORT_SIZE (8) */
-    HID_REPORT_SIZE(8),
+    HID_REPORT_SIZE(7),
     /* INPUT(Data, Var, Abs) */
+    HID_INPUT(0x02),
+    // Button report herre for compat, isn't actuallyy used yet :)
+    HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
+    /* USAGE (Button 1) */
+    HID_USAGE(0x01),
+    /* LOGICAL_MAXIMUM (1) */
+    HID_LOGICAL_MAX8(1),
+    /* REPORT_SIZE (1) */
+    HID_REPORT_SIZE(1),
+    /* REPORT_COUNT (1) */
+    HID_REPORT_COUNT(1),
+    /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
 
     /* Device Capabilities Feature Report */
