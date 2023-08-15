@@ -5,7 +5,7 @@
  */
 
 #include <errno.h>
-#include <drivers/sensor.h>
+#include <zephyr/drivers/sensor.h>
 
 #if CONFIG_ZMK_BATTERY_VOLTAGE_DIVIDER
 #include <drivers/sensor/battery/battery_voltage_divider.h>
@@ -25,13 +25,13 @@ int battery_channel_get(const struct battery_value *value, enum sensor_channel c
         val_out->val1 = value->state_of_charge;
         val_out->val2 = 0;
         break;
-        
-    #if CONFIG_ZMK_BATTERY_VOLTAGE_DIVIDER
+
+#if CONFIG_ZMK_BATTERY_VOLTAGE_DIVIDER
     case SENSOR_CHAN_CHARGING:
         val_out->val1 = value->charging;
         val_out->val2 = 0;
         break;
-    #endif
+#endif
 
     default:
         return -ENOTSUP;

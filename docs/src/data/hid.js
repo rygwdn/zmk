@@ -1356,7 +1356,7 @@ export default [
     footnotes: {},
   },
   {
-    names: ["NON_US_HASH"],
+    names: ["NON_US_HASH", "NUHS"],
     description: "Non-US # [Hash/Pound] and ~ [Tilde]",
     context: "Keyboard",
     clarify: false,
@@ -2606,7 +2606,7 @@ export default [
     footnotes: {},
   },
   {
-    names: ["NON_US_BACKSLASH", "NON_US_BSLH"],
+    names: ["NON_US_BACKSLASH", "NON_US_BSLH", "NUBS"],
     description: "Non-US \\ [Backslash] and | [Pipe]",
     context: "Keyboard",
     clarify: false,
@@ -3477,7 +3477,7 @@ export default [
   },
   {
     names: ["INTERNATIONAL_6", "INT6", "INT_KPJPCOMMA"],
-    description: ", [カソマ] (International 6)",
+    description: ", [カンマ] (International 6)",
     context: "Keyboard",
     clarify: false,
     usages: [
