@@ -21,16 +21,17 @@ static struct zmk_hid_consumer_report consumer_report = {.report_id = 2, .body =
 // Report containing finger data
 struct zmk_hid_ptp_report ptp_report = {
     .report_id = ZMK_REPORT_ID_TRACKPAD,
-    .body = {.finger = {.confidence_tip = 0, .contact_id = 0, .x = 0, .y = 0}, .contact_count = 0}};
+    .body = {.finger = {.confidence_tip = 0, .contact_id = 0, .x = 0, .y = 0},
+             .contact_count = 0,
+             .buttons = (1 << 4)}};
 
 // Feature report for configuration
-struct zmk_ptp_feature_configuration ptp_feature_configuration = {
-    .report_id = ZMK_REPORT_ID_FEATURE_PTP_CONFIGURATION,
-    .input_mode = 0,
-    .selective_reporting = 0};
+struct zmk_hid_ptp_feature_selective_report ptp_feature_selective_report = {
+    .report_id = ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE, .selective_reporting = 3};
 
 // Feature report for ptphqa
-struct zmk_ptp_feature_certification ptp_feature_certification = {
+struct zmk_hid_ptp_feature_certification_report ptp_feature_certification_report = {
+    .report_id = ZMK_REPORT_ID_FEATURE_PTPHQA,
     .ptphqa_blob = {
         0xfc, 0x28, 0xfe, 0x84, 0x40, 0xcb, 0x9a, 0x87, 0x0d, 0xbe, 0x57, 0x3c, 0xb6, 0x70, 0x09,
         0x88, 0x07, 0x97, 0x2d, 0x2b, 0xe3, 0x38, 0x34, 0xb6, 0x6c, 0xed, 0xb0, 0xf7, 0xe5, 0x9c,
@@ -52,7 +53,8 @@ struct zmk_ptp_feature_certification ptp_feature_certification = {
         0xc2}};
 
 // Feature report for device capabilities
-struct zmk_ptp_feature_capabilities ptp_feature_capabilities = {
+struct zmk_hid_ptp_feature_capabilities_report ptp_feature_capabilities_report = {
+    .report_id = ZMK_REPORT_ID_FEATURE_PTP_CAPABILITIES,
     .max_touches_pad_type = CONFIG_ZMK_TRACKPAD_MAX_FINGERS | (PTP_PAD_TYPE_NON_CLICKABLE << 4)};
 #endif
 
@@ -321,5 +323,21 @@ struct zmk_hid_consumer_report *zmk_hid_get_consumer_report() {
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 struct zmk_hid_ptp_report *zmk_hid_get_ptp_report() {
     return &ptp_report;
+}
+
+struct zmk_hid_ptp_feature_selective_report *zmk_hid_ptp_get_feature_selective_report() {
+    return &ptp_feature_selective_report;
+}
+
+void zmk_hid_ptp_set_feature_selective_report(uint8_t selective_report) {
+    ptp_feature_selective_report.selective_reporting = selective_report;
+}
+
+struct zmk_hid_ptp_feature_certification_report *zmk_hid_ptp_get_feature_certification_report() {
+    return &ptp_feature_certification_report;
+}
+
+struct zmk_hid_ptp_feature_capabilities_report *zmk_hid_ptp_get_feature_capabilities_report() {
+    return &ptp_feature_capabilities_report;
 }
 #endif

@@ -114,7 +114,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Logical) */
-    HID_COLLECTION(0x02),
+    HID_COLLECTION(HID_COLLECTION_LOGICAL),
     /* LOGICAL_MINIMUM (0) */
     HID_LOGICAL_MIN8(0),
     /* LOGICAL_MAXIMUM (1) */
@@ -202,6 +202,43 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_SIZE(8),
     /* INPUT(Data, Var, Abs) */
     HID_INPUT(0x02),
+    // Button report herre for compat, isn't actuallyy used yet :)
+    HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
+    /* USAGE (Button 1) */
+    HID_USAGE(0x01),
+    HID_USAGE(0x02),
+    HID_USAGE(0x03),
+    /* REPORT_SIZE (1) */
+    HID_REPORT_SIZE(1),
+    /* REPORT_COUNT (1) */
+    HID_REPORT_COUNT(3),
+    /* LOGICAL_MAXIMUM (1) */
+    HID_LOGICAL_MIN8(0),
+    HID_LOGICAL_MAX8(1),
+    /* INPUT (Data, Var, Abs) */
+    HID_INPUT(0x02),
+    /* REPORT_SIZE (1) */
+    HID_REPORT_SIZE(1),
+    /* REPORT_COUNT (byte padding) */
+    HID_REPORT_COUNT(1),
+    /* INPUT (Cnst,Var,Abs) */
+    HID_INPUT(0x03),
+    // Surface switch for mac
+    HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
+    /* USAGE (Surface switch) */
+    HID_USAGE(HID_USAGE_DIGITIZERS_SURFACE_SWITCH),
+    /* REPORT_COUNT (1) */
+    HID_REPORT_COUNT(1),
+    /* REPORT_SIZE (8) */
+    HID_REPORT_SIZE(1),
+    /* INPUT(Data, Var, Abs) */
+    HID_INPUT(0x02),
+    /* REPORT_SIZE (1) */
+    HID_REPORT_SIZE(1),
+    /* REPORT_COUNT (byte padding) */
+    HID_REPORT_COUNT(3),
+    /* INPUT (Cnst,Var,Abs) */
+    HID_INPUT(0x03),
 
     /* Device Capabilities Feature Report */
 
@@ -218,6 +255,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* REPORT_COUNT (2) */
     HID_REPORT_COUNT(2),
     /* LOGICAL_MAXIMUM (15) */
+    HID_LOGICAL_MIN8(0),
     HID_LOGICAL_MAX8(0x0F),
     /* FEATURE (Data, Var, Abs) */
     HID_FEATURE(0x02),
@@ -227,7 +265,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* USAGE_PAGE (Vendor Defined) */
     0x06,
     0x00,
-    0xFF,
+    0xff,
     /* REPORT_ID (0x08) */
     HID_REPORT_ID(ZMK_REPORT_ID_FEATURE_PTPHQA),
     /* HID_USAGE (Vendor Usage 0xC5) */
@@ -247,34 +285,11 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* END_COLLECTION */
     HID_END_COLLECTION,
 
-    // TLC
-    /* USAGE_PAGE (Digitizer) */
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-    /* USAGE (Configuration) */
-    HID_USAGE(0x0E),
-    /* HID_COLLECTION */
-    HID_COLLECTION(HID_COLLECTION_APPLICATION),
-    /* REPORT_ID (Feature 0x09) */
-    HID_REPORT_ID(ZMK_REPORT_ID_FEATURE_PTP_CONFIGURATION),
-    /* USAGE (Finger) */
-    HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
-    /* COLLECTION (Logical) */
-    HID_COLLECTION(0x02),
-    /* USAGE (Input Mode) */
-    HID_USAGE(0x52),
-    /* LOGICAL_MINIMUM (0) */
-    HID_LOGICAL_MIN8(0),
-    /* LOGICAL_MAXIMUM (10) */
-    HID_LOGICAL_MAX8(10),
-    /* REPORT_SIZE (8) */
-    HID_REPORT_SIZE(8),
-    /* REPORT_COUNT (1) */
-    HID_REPORT_COUNT(1),
-    /* FEATURE (Data, Var, Abs) */
-    HID_FEATURE(0x02),
-    /* END_COLLECTION */
-    HID_END_COLLECTION,
 
+    HID_USAGE(HID_USAGE_DIGITIZERS_DEVICE_CONFIGURATION),
+
+    HID_COLLECTION(HID_COLLECTION_APPLICATION),
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Physical) */
@@ -290,6 +305,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* REPORT_COUNT (2) */
     HID_REPORT_COUNT(2),
     /* LOGICAL_MAXIMUM (1) */
+    HID_LOGICAL_MIN8(0),
     HID_LOGICAL_MAX8(1),
     /* FEATURE (Data, Var, Abs) */
     HID_FEATURE(0x02),
@@ -299,7 +315,6 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_FEATURE(0x03),
     /* END_COLLECTION */
     HID_END_COLLECTION,
-    /* END_COLLECTION */
     HID_END_COLLECTION,
 #endif
 
@@ -359,8 +374,8 @@ struct zmk_hid_ptp_report_body {
     struct zmk_ptp_finger finger;
     // Contact count
     uint8_t contact_count;
-    // Buttons
-    // uint8_t buttons;
+    // Buttons /surfaceswitch
+    uint8_t buttons;
 } __packed;
 
 // Report containing finger data
@@ -372,16 +387,16 @@ struct zmk_hid_ptp_report {
 } __packed;
 
 // Feature report for configuration
-struct zmk_ptp_feature_configuration {
+struct zmk_hid_ptp_feature_selective_report {
     uint8_t report_id;
-    // 0 for Mouse collection, 3 for Windows Precision Touchpad Collection
-    uint8_t input_mode;
     // Selective reporting: Surface switch (bit 0), Button switch (bit 1)
     uint8_t selective_reporting;
 } __packed;
 
 // Feature report for certification
-struct zmk_ptp_feature_certification {
+struct zmk_hid_ptp_feature_certification_report {
+    uint8_t report_id;
+
     uint8_t ptphqa_blob[256];
 } __packed;
 
@@ -390,7 +405,7 @@ struct zmk_ptp_feature_certification {
 #define PTP_PAD_TYPE_NON_CLICKABLE 0x02
 
 // Feature report for device capabilities
-struct zmk_ptp_feature_capabilities {
+struct zmk_hid_ptp_feature_capabilities_report {
     uint8_t report_id;
     // Max touches (L 4bit) and pad type (H 4bit):
     // Max touches: number 3-5
@@ -435,4 +450,8 @@ struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report();
 struct zmk_hid_consumer_report *zmk_hid_get_consumer_report();
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 struct zmk_hid_ptp_report *zmk_hid_get_ptp_report();
+struct zmk_hid_ptp_feature_selective_report *zmk_hid_ptp_get_feature_selective_report();
+void zmk_hid_ptp_set_feature_selective_report(uint8_t selective_report);
+struct zmk_hid_ptp_feature_certification_report *zmk_hid_ptp_get_feature_certification_report();
+struct zmk_hid_ptp_feature_capabilities_report *zmk_hid_ptp_get_feature_capabilities_report();
 #endif
