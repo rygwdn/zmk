@@ -9,7 +9,10 @@
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-const struct device *trackpad = DEVICE_DT_GET(DT_INST(0, cirque_gen4));
+BUILD_ASSERT(DT_HAS_CHOSEN(zmk_trackpad),
+             "CONFIG_ZMK_TRACKPAD is enabled but no zmk,trackpad chosen node found");
+
+const struct device *trackpad = DEVICE_DT_GET(DT_CHOSEN(zmk_trackpad));
 
 static zmk_trackpad_finger_contacts_t present_contacts = 0;
 static zmk_trackpad_finger_contacts_t contacts_to_send = 0;

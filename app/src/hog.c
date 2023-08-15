@@ -56,6 +56,7 @@ static struct hids_report consumer_input = {
     .type = HIDS_INPUT,
 };
 
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 static struct hids_report trackpad_report = {
     .id = ZMK_REPORT_ID_TRACKPAD,
     .type = HIDS_INPUT,
@@ -80,6 +81,7 @@ static struct hids_report trackpad_selective = {
     .id = ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE,
     .type = HIDS_FEATURE,
 };
+#endif
 
 static bool host_requests_notification = false;
 static uint8_t ctrl_point;

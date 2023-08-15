@@ -22,6 +22,7 @@
         zephyr,flash = &flash0;
         zmk,kscan = &kscan0;
         zephyr,console = &cdc_acm_uart;
+        zmk,trackpad = &trackpad;
 
     };
 
