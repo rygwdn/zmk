@@ -48,6 +48,7 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
         } else {
             struct zmk_hid_ptp_feature_selective_report *report =
                 (struct zmk_hid_ptp_feature_selective_report *)*data;
+            LOG_DBG("Selective report set %d", report->selective_reporting);
             zmk_hid_ptp_set_feature_selective_report(report->selective_reporting);
         }
         break;
@@ -72,6 +73,8 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
 
         struct zmk_hid_ptp_feature_selective_report *report1 =
             zmk_hid_ptp_get_feature_selective_report();
+        LOG_DBG("Selective report get %d", 0);
+
         int err1 = zmk_usb_hid_send_report((uint8_t *)report1, sizeof(*report1));
         if (err1) {
             LOG_ERR("FAILED TO SEND SELECTIVE OVER USB: %d", err1);
@@ -83,6 +86,8 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
 
         struct zmk_hid_ptp_feature_certification_report *report2 =
             zmk_hid_ptp_get_feature_certification_report();
+        LOG_DBG("Certification report get %d", 0);
+
         int err2 = zmk_usb_hid_send_report((uint8_t *)report2, sizeof(*report2));
         if (err2) {
             LOG_ERR("FAILED TO SEND CERTIFICATION OVER USB: %d", err2);
@@ -94,6 +99,8 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
 
         struct zmk_hid_ptp_feature_capabilities_report *report3 =
             zmk_hid_ptp_get_feature_capabilities_report();
+        LOG_DBG("Capabilities report get %d", report3->max_touches_pad_type);
+
         int err3 = zmk_usb_hid_send_report((uint8_t *)report3, sizeof(*report3));
         if (err3) {
             LOG_ERR("FAILED TO SEND CAPABILITIES OVER USB: %d", err3);
