@@ -70,35 +70,35 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
     switch (setup->wValue & HID_GET_REPORT_ID_MASK) {
     case ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE:
 
-        struct zmk_hid_ptp_feature_selective_report *report =
+        struct zmk_hid_ptp_feature_selective_report *report1 =
             zmk_hid_ptp_get_feature_selective_report();
-        int err = zmk_usb_hid_send_report((uint8_t *)report, sizeof(*report));
-        if (err) {
-            LOG_ERR("FAILED TO SEND SELECTIVE OVER USB: %d", err);
+        int err1 = zmk_usb_hid_send_report((uint8_t *)report1, sizeof(*report1));
+        if (err1) {
+            LOG_ERR("FAILED TO SEND SELECTIVE OVER USB: %d", err1);
         }
-        return err;
+        return err1;
 
         break;
     case ZMK_REPORT_ID_FEATURE_PTPHQA:
 
-        struct zmk_hid_ptp_feature_certification_report *report =
+        struct zmk_hid_ptp_feature_certification_report *report2 =
             zmk_hid_ptp_get_feature_certification_report();
-        int err = zmk_usb_hid_send_report((uint8_t *)report, sizeof(*report));
-        if (err) {
-            LOG_ERR("FAILED TO SEND CERTIFICATION OVER USB: %d", err);
+        int err2 = zmk_usb_hid_send_report((uint8_t *)report2, sizeof(*report2));
+        if (err2) {
+            LOG_ERR("FAILED TO SEND CERTIFICATION OVER USB: %d", err2);
         }
-        return err;
+        return err2;
 
         break;
     case ZMK_REPORT_ID_FEATURE_PTP_CAPABILITIES:
 
-        struct zmk_hid_ptp_feature_capabilities_report *report =
+        struct zmk_hid_ptp_feature_capabilities_report *report3 =
             zmk_hid_ptp_get_feature_capabilities_report();
-        int err = zmk_usb_hid_send_report((uint8_t *)report, sizeof(*report));
-        if (err) {
-            LOG_ERR("FAILED TO SEND CAPABILITIES OVER USB: %d", err);
+        int err3 = zmk_usb_hid_send_report((uint8_t *)report3, sizeof(*report3));
+        if (err3) {
+            LOG_ERR("FAILED TO SEND CAPABILITIES OVER USB: %d", err3);
         }
-        return err;
+        return err3;
 
         break;
     default:
