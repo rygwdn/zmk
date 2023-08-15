@@ -251,8 +251,8 @@ static uint8_t split_central_chrc_discovery_func(struct bt_conn *conn,
 
     LOG_DBG("[ATTRIBUTE] handle %u", attr->handle);
 
-    if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
-                     BT_UUID_DECLARE_128(ZMK_SPLIT_BT_CHAR_POSITION_STATE_UUID))) {
+    if (bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
+                    BT_UUID_DECLARE_128(ZMK_SPLIT_BT_CHAR_POSITION_STATE_UUID)) == 0) {
         LOG_DBG("Found position state characteristic");
         slot->discover_params.uuid = NULL;
         slot->discover_params.start_handle = attr->handle + 2;
@@ -264,8 +264,8 @@ static uint8_t split_central_chrc_discovery_func(struct bt_conn *conn,
         slot->subscribe_params.notify = split_central_notify_func;
         slot->subscribe_params.value = BT_GATT_CCC_NOTIFY;
         split_central_subscribe(conn);
-    } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
-                            BT_UUID_DECLARE_128(ZMK_SPLIT_BT_CHAR_RUN_BEHAVIOR_UUID))) {
+    } else if (bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
+                           BT_UUID_DECLARE_128(ZMK_SPLIT_BT_CHAR_RUN_BEHAVIOR_UUID)) == 0) {
         LOG_DBG("Found run behavior handle");
         slot->run_behavior_handle = bt_gatt_attr_value_handle(attr);
     }
@@ -292,7 +292,8 @@ static uint8_t split_central_service_discovery_func(struct bt_conn *conn,
         return BT_GATT_ITER_STOP;
     }
 
-    if (bt_uuid_cmp(slot->discover_params.uuid, BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SERVICE_UUID))) {
+    if (bt_uuid_cmp(slot->discover_params.uuid, BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SERVICE_UUID)) !=
+        0) {
         LOG_DBG("Found other service");
         return BT_GATT_ITER_CONTINUE;
     }
@@ -383,7 +384,9 @@ static bool split_central_eir_found(const bt_addr_le_t *addr) {
     struct peripheral_slot *slot = &peripherals[slot_idx];
 
     LOG_DBG("Initiating new connnection");
-    struct bt_le_conn_param *param = BT_LE_CONN_PARAM(0x0006, 0x0006, 30, 400);
+    struct bt_le_conn_param *param =
+        BT_LE_CONN_PARAM(CONFIG_ZMK_SPLIT_BLE_PREF_INT, CONFIG_ZMK_SPLIT_BLE_PREF_INT,
+                         CONFIG_ZMK_SPLIT_BLE_PREF_LATENCY, CONFIG_ZMK_SPLIT_BLE_PREF_TIMEOUT);
     err = bt_conn_le_create(addr, BT_CONN_LE_CREATE_CONN, param, &slot->conn);
     if (err < 0) {
         LOG_ERR("Create conn failed (err %d) (create conn? 0x%04x)", err, BT_HCI_OP_LE_CREATE_CONN);
@@ -416,7 +419,7 @@ static bool split_central_eir_parse(struct bt_data *data, void *user_data) {
                 continue;
             }
 
-            if (bt_uuid_cmp(&uuid.uuid, BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SERVICE_UUID))) {
+            if (bt_uuid_cmp(&uuid.uuid, BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SERVICE_UUID)) != 0) {
                 char uuid_str[BT_UUID_STR_LEN];
                 char service_uuid_str[BT_UUID_STR_LEN];
 
@@ -620,7 +623,7 @@ int zmk_split_bt_central_init(const struct device *_arg) {
                        CONFIG_ZMK_BLE_THREAD_PRIORITY, NULL);
     bt_conn_cb_register(&conn_callbacks);
 
-    return start_scanning();
+    return IS_ENABLED(CONFIG_ZMK_BLE_CLEAR_BONDS_ON_START) ? 0 : start_scanning();
 }
 
 SYS_INIT(zmk_split_bt_central_init, APPLICATION, CONFIG_ZMK_BLE_INIT_PRIORITY);
