@@ -25,6 +25,7 @@ struct io_channel_config {
 struct bvd_config {
     struct io_channel_config io_channel;
     struct gpio_dt_spec power;
+    struct gpio_dt_spec chg;
     uint32_t output_ohm;
     uint32_t full_ohm;
 };
@@ -94,17 +95,17 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
     }
 #endif // DT_INST_NODE_HAS_PROP(0, power_gpios)
 
-    if (drv_data->gpio2) {
-        int raw = gpio_pin_get(drv_data->gpio, drv_cfg->chg_gpios.pin);
-        if (raw == -EIO || raw == -EWOULDBLOCK) {
-            LOG_DBG("Failed to read chg status: %d", raw);
-            return raw;
-        } else {
-            bool charging = raw;
-            drv_data->value.charging = charging;
-        }
+#if DT_INST_NODE_HAS_PROP(0, chg_gpios)
+    int raw = gpio_pin_get_dt(&drv_cfg->chg);
+    if (raw == -EIO || raw == -EWOULDBLOCK) {
+        LOG_DBG("Failed to read chg status: %d", raw);
+        return raw;
+    } else {
+        bool charging = raw;
+        drv_data->value.charging = charging;
     }
 
+#endif
     return rc;
 }
 
@@ -142,20 +143,17 @@ static int bvd_init(const struct device *dev) {
     }
 #endif // DT_INST_NODE_HAS_PROP(0, power_gpios)
 
-    if (drv_cfg->chg_gpios.label) {
-        drv_data->gpio2 = device_get_binding(drv_cfg->chg_gpios.label);
-        if (drv_data->gpio2 == NULL) {
-            LOG_ERR("Failed to get GPIO %s", drv_cfg->chg_gpios.label);
-            return -ENODEV;
-        }
-        rc = gpio_pin_configure(drv_data->gpio2, drv_cfg->chg_gpios.pin,
-                                GPIO_INPUT | drv_cfg->chg_gpios.flags);
-        if (rc != 0) {
-            LOG_ERR("Failed to configure input %s.%u: %d", drv_cfg->chg_gpios.label,
-                    drv_cfg->chg_gpios.pin, rc);
-            return rc;
-        }
+#if DT_INST_NODE_HAS_PROP(0, chg_gpios)
+    if (!device_is_ready(drv_cfg->chg.port)) {
+        LOG_ERR("GPIO port for chg reading is not ready");
+        return -ENODEV;
     }
+    rc = gpio_pin_configure_dt(&drv_cfg->chg, GPIO_INPUT);
+    if (rc != 0) {
+        LOG_ERR("Failed to set chg feed %u: %d", drv_cfg->chg.pin, rc);
+        return rc;
+    }
+#endif // DT_INST_NODE_HAS_PROP(0, chg_gpios)
 
     drv_data->as = (struct adc_sequence){
         .channels = BIT(0),
@@ -195,12 +193,7 @@ static const struct bvd_config bvd_cfg = {
     .power = GPIO_DT_SPEC_INST_GET(0, power_gpios),
 #endif
 #if DT_INST_NODE_HAS_PROP(0, chg_gpios)
-    .chg_gpios =
-        {
-            DT_INST_GPIO_LABEL(0, chg_gpios),
-            DT_INST_GPIO_PIN(0, chg_gpios),
-            DT_INST_GPIO_FLAGS(0, chg_gpios),
-        },
+    .chg = GPIO_DT_SPEC_INST_GET(0, chg_gpios),
 #endif
     .output_ohm = DT_INST_PROP(0, output_ohms),
     .full_ohm = DT_INST_PROP(0, full_ohms),

@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#include <drivers/sensor.h>
+#include <zephyr/drivers/sensor.h>
 
 enum sensor_channel_bvd {
     /** Charging state, bool **/
