@@ -259,6 +259,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* END_COLLECTION */
     HID_END_COLLECTION,
 
+    HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Physical) */
