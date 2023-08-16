@@ -67,8 +67,10 @@ static int gen4_sample_fetch(const struct device *dev, enum sensor_channel) {
     int ret;
     ret = gen4_normal_read(dev, packet, 52);
     if (ret < 0) {
-        LOG_ERR("read status: %d", ret);
-        return ret;
+        LOG_ERR("read status: %d, retrying", ret);
+        ret = gen4_normal_read(dev, packet, 52);
+        if (ret != 0)
+            return ret;
     }
     if (!(packet[REPORT_ID_SHIFT] == PTP_REPORT_ID)) {
         return -EAGAIN;
