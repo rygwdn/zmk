@@ -114,7 +114,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Logical) */
-    HID_COLLECTION(0x02),
+    HID_COLLECTION(HID_COLLECTION_LOGICAL),
     /* LOGICAL_MINIMUM (0) */
     HID_LOGICAL_MIN8(0),
     /* LOGICAL_MAXIMUM (1) */
@@ -206,11 +206,14 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
     /* USAGE (Button 1) */
     HID_USAGE(0x01),
+    HID_USAGE(0x02),
+    HID_USAGE(0x03),
     /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
     /* REPORT_COUNT (1) */
     HID_REPORT_COUNT(3),
     /* LOGICAL_MAXIMUM (1) */
+    HID_LOGICAL_MIN8(0),
     HID_LOGICAL_MAX8(1),
     /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
@@ -252,6 +255,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* REPORT_COUNT (2) */
     HID_REPORT_COUNT(2),
     /* LOGICAL_MAXIMUM (15) */
+    HID_LOGICAL_MIN8(0),
     HID_LOGICAL_MAX8(0x0F),
     /* FEATURE (Data, Var, Abs) */
     HID_FEATURE(0x02),
@@ -261,7 +265,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* USAGE_PAGE (Vendor Defined) */
     0x06,
     0x00,
-    0xFF,
+    0xff,
     /* REPORT_ID (0x08) */
     HID_REPORT_ID(ZMK_REPORT_ID_FEATURE_PTPHQA),
     /* HID_USAGE (Vendor Usage 0xC5) */
@@ -301,6 +305,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* REPORT_COUNT (2) */
     HID_REPORT_COUNT(2),
     /* LOGICAL_MAXIMUM (1) */
+    HID_LOGICAL_MIN8(0),
     HID_LOGICAL_MAX8(1),
     /* FEATURE (Data, Var, Abs) */
     HID_FEATURE(0x02),
