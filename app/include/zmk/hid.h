@@ -199,21 +199,43 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* REPORT_COUNT (1) */
     HID_REPORT_COUNT(1),
     /* REPORT_SIZE (8) */
-    HID_REPORT_SIZE(7),
+    HID_REPORT_SIZE(8),
     /* INPUT(Data, Var, Abs) */
     HID_INPUT(0x02),
     // Button report herre for compat, isn't actuallyy used yet :)
     HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
     /* USAGE (Button 1) */
     HID_USAGE(0x01),
-    /* LOGICAL_MAXIMUM (1) */
-    HID_LOGICAL_MAX8(1),
     /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
     /* REPORT_COUNT (1) */
-    HID_REPORT_COUNT(1),
+    HID_REPORT_COUNT(3),
+    /* LOGICAL_MAXIMUM (1) */
+    HID_LOGICAL_MAX8(1),
     /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
+    /* REPORT_SIZE (1) */
+    HID_REPORT_SIZE(1),
+    /* REPORT_COUNT (byte padding) */
+    HID_REPORT_COUNT(1),
+    /* INPUT (Cnst,Var,Abs) */
+    HID_INPUT(0x03),
+    // Surface switch for mac
+    HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
+    /* USAGE (Surface switch) */
+    HID_USAGE(HID_USAGE_DIGITIZERS_SURFACE_SWITCH),
+    /* REPORT_COUNT (1) */
+    HID_REPORT_COUNT(1),
+    /* REPORT_SIZE (8) */
+    HID_REPORT_SIZE(1),
+    /* INPUT(Data, Var, Abs) */
+    HID_INPUT(0x02),
+    /* REPORT_SIZE (1) */
+    HID_REPORT_SIZE(1),
+    /* REPORT_COUNT (byte padding) */
+    HID_REPORT_COUNT(3),
+    /* INPUT (Cnst,Var,Abs) */
+    HID_INPUT(0x03),
 
     /* Device Capabilities Feature Report */
 
@@ -260,6 +282,10 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_END_COLLECTION,
 
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
+
+    HID_USAGE(HID_USAGE_DIGITIZERS_DEVICE_CONFIGURATION),
+
+    HID_COLLECTION(HID_COLLECTION_APPLICATION),
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Physical) */
@@ -283,6 +309,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* FEATURE (Cnst, Var, Abs) */
     HID_FEATURE(0x03),
     /* END_COLLECTION */
+    HID_END_COLLECTION,
     HID_END_COLLECTION,
 #endif
 
@@ -342,8 +369,8 @@ struct zmk_hid_ptp_report_body {
     struct zmk_ptp_finger finger;
     // Contact count
     uint8_t contact_count;
-    // Buttons
-    // uint8_t buttons;
+    // Buttons /surfaceswitch
+    uint8_t buttons;
 } __packed;
 
 // Report containing finger data

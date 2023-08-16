@@ -21,7 +21,9 @@ static struct zmk_hid_consumer_report consumer_report = {.report_id = 2, .body =
 // Report containing finger data
 struct zmk_hid_ptp_report ptp_report = {
     .report_id = ZMK_REPORT_ID_TRACKPAD,
-    .body = {.finger = {.confidence_tip = 0, .contact_id = 0, .x = 0, .y = 0}, .contact_count = 0}};
+    .body = {.finger = {.confidence_tip = 0, .contact_id = 0, .x = 0, .y = 0},
+             .contact_count = 0,
+             .buttons = (1 << 4)}};
 
 // Feature report for configuration
 struct zmk_hid_ptp_feature_selective_report ptp_feature_selective_report = {
