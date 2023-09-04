@@ -71,7 +71,14 @@ static int zmk_battery_update(const struct device *battery) {
             (struct zmk_battery_state_changed){.state_of_charge = last_state_of_charge}));
     }
 
-#if CONFIG_ZMK_BATTERY_VOLTAGE_DIVIDER
+#if DT_NODE_HAS_PROP(DT_CHOSEN(zmk_battery), chg_gpios)
+
+    rc = sensor_sample_fetch_chan(battery, SENSOR_CHAN_CHARGING);
+
+    if (rc != 0) {
+        LOG_DBG("Failed to fetch battery values: %d", rc);
+        return rc;
+    }
     struct sensor_value charging_state;
     rc = sensor_channel_get(battery, SENSOR_CHAN_CHARGING, &charging_state);
     if (rc != 0) {

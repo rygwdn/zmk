@@ -44,7 +44,7 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
 
     // Make sure selected channel is supported
     if (chan != SENSOR_CHAN_GAUGE_VOLTAGE && chan != SENSOR_CHAN_GAUGE_STATE_OF_CHARGE &&
-        chan != SENSOR_CHAN_CHARGING && chan != SENSOR_CHAN_ALL) {
+        (enum sensor_channel_bvd)chan != SENSOR_CHAN_CHARGING && chan != SENSOR_CHAN_ALL) {
         LOG_DBG("Selected channel is not supported: %d.", chan);
         return -ENOTSUP;
     }
@@ -102,6 +102,7 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
         return raw;
     } else {
         bool charging = raw;
+        LOG_DBG("Charging state: %d", raw);
         drv_data->value.charging = charging;
     }
 
