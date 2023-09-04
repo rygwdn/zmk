@@ -21,7 +21,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/workqueue.h>
 
 #if CONFIG_ZMK_BATTERY_VOLTAGE_DIVIDER
-#include "drivers/sensor/battery/battery_voltage_divider.h"
+#include <drivers/sensor/battery/battery_voltage_divider.h>
 #endif
 
 static uint8_t last_state_of_charge = 0;
