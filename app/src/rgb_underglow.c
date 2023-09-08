@@ -18,6 +18,7 @@
 #include <drivers/ext_power.h>
 
 #include <zmk/rgb_underglow.h>
+#include <zmk/battery.h>
 
 #include <zmk/activity.h>
 #include <zmk/usb.h>
@@ -131,8 +132,37 @@ static struct led_rgb hsb_to_rgb(struct zmk_led_hsb hsb) {
 }
 
 static void zmk_rgb_underglow_effect_solid() {
-    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-        pixels[i] = hsb_to_rgb(hsb_scale_min_max(state.color));
+    if (zmk_usb_is_powered())
+        if (zmk_battery_charging()) {
+            for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+                struct zmk_led_hsb hsb = state.color;
+                hsb.h = 120;
+                hsb.b = abs(state.animation_step - 1200) / 12;
+
+                pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+            }
+
+            state.animation_step += state.animation_speed * 10;
+
+            if (state.animation_step > 2400) {
+                state.animation_step = 0;
+            }
+        } else {
+            state.color.h = 120;
+            for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+                pixels[i] = hsb_to_rgb(hsb_scale_min_max(state.color));
+            }
+        }
+    else {
+        for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+            struct zmk_led_hsb hsb = state.color;
+            hsb.h = state.animation_step;
+
+            pixels[i] = hsb_to_rgb(hsb_scale_min_max(hsb));
+        }
+
+        state.animation_step += state.animation_speed;
+        state.animation_step = state.animation_step % HUE_MAX;
     }
 }
 
