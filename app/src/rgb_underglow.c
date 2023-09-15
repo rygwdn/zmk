@@ -156,12 +156,12 @@ static void zmk_rgb_underglow_effect_solid() {
     else {
         for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
             struct zmk_led_hsb hsb = state.color;
-            hsb.h = state.animation_step;
+            hsb.h = (HUE_MAX / STRIP_NUM_PIXELS * i + state.animation_step) % HUE_MAX;
 
             pixels[i] = hsb_to_rgb(hsb_scale_min_max(hsb));
         }
 
-        state.animation_step += state.animation_speed;
+        state.animation_step += state.animation_speed * 2;
         state.animation_step = state.animation_step % HUE_MAX;
     }
 }
