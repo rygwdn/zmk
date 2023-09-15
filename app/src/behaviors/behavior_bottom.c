@@ -6,12 +6,12 @@
 
 #define DT_DRV_COMPAT zmk_behavior_bottom
 
-#include <device.h>
+#include <zephyr/device.h>
 #include <drivers/behavior.h>
-#include <kernel.h>
-#include <logging/log.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 #include <zmk/behavior.h>
-#include <random/rand32.h>
+#include <zephyr/random/rand32.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/keycode_state_changed.h>
 
