@@ -79,6 +79,7 @@ endif()
 
 target_sources_ifdef(CONFIG_ZMK_RGB_UNDERGLOW app PRIVATE src/behaviors/behavior_rgb_underglow.c)
 target_sources_ifdef(CONFIG_ZMK_BACKLIGHT app PRIVATE src/behaviors/behavior_backlight.c)
+target_sources_ifdef(CONFIG_ZMK_STP_INDICATORS app PRIVATE src/behaviors/behavior_stp_indicators.c)
 
 target_sources_ifdef(CONFIG_ZMK_BATTERY_REPORTING app PRIVATE src/events/battery_state_changed.c)
 target_sources_ifdef(CONFIG_ZMK_BATTERY_REPORTING app PRIVATE src/battery.c)
@@ -91,6 +92,7 @@ add_subdirectory(src/split)
 target_sources_ifdef(CONFIG_USB_DEVICE_STACK app PRIVATE src/usb.c)
 target_sources_ifdef(CONFIG_ZMK_RGB_UNDERGLOW app PRIVATE src/rgb_underglow.c)
 target_sources_ifdef(CONFIG_ZMK_BACKLIGHT app PRIVATE src/backlight.c)
+target_sources_ifdef(CONFIG_ZMK_STP_INDICATORS app PRIVATE src/stp_indicators.c)
 target_sources(app PRIVATE src/workqueue.c)
 target_sources(app PRIVATE src/main.c)
 
