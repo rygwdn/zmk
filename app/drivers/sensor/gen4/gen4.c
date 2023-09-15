@@ -53,6 +53,9 @@ static int gen4_channel_get(const struct device *dev, enum sensor_channel chan,
     case SENSOR_CHAN_FINGER:
         val->val1 = data->finger_id;
         break;
+    case SENSOR_CHAN_SCAN_TIME:
+        val->val1 = data->scan_time;
+        break;
     case SENSOR_CHAN_BUTTONS:
         val->val1 = data->btns;
         break;
@@ -81,9 +84,11 @@ static int gen4_sample_fetch(const struct device *dev, enum sensor_channel) {
     struct gen4_data *data = dev->data;
 
     if (report_length == 12) {
+        data->scan_time = (uint16_t)packet[8] | (uint16_t)(packet[9] << 8);
         data->contacts = packet[10];
         data->btns = packet[11];
     } else {
+        data->scan_time = (uint16_t)packet[9] | (uint16_t)(packet[10] << 8);
         data->contacts = packet[11];
         data->btns = packet[12];
     }

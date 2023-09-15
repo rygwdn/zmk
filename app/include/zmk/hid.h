@@ -202,6 +202,23 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_SIZE(8),
     /* INPUT(Data, Var, Abs) */
     HID_INPUT(0x02),
+    // scan time
+    0x55,
+    0x0C, //    UNIT_EXPONENT (-4)
+    0x66,
+    0x01,
+    0x10, //    UNIT (Seconds)
+    0x47,
+    0xff,
+    0xff,
+    0x00,
+    0x00, //     PHYSICAL_MAXIMUM (65535)
+    HID_LOGICAL_MAX16(0xff, 0xff),
+    HID_REPORT_SIZE(16),
+    HID_REPORT_COUNT(1),
+    HID_USAGE(HID_USAGE_DIGITIZERS_SCAN_TIME),
+    HID_INPUT(0x02),
+
     // Button report herre for compat, isn't actuallyy used yet :)
     HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
     /* USAGE (Button 1) */
@@ -374,8 +391,11 @@ struct zmk_hid_ptp_report_body {
     struct zmk_ptp_finger finger;
     // Contact count
     uint8_t contact_count;
+    // scantime
+    uint16_t scan_time;
     // Buttons /surfaceswitch
     uint8_t buttons;
+
 } __packed;
 
 // Report containing finger data
@@ -443,7 +463,8 @@ int zmk_hid_release(uint32_t usage);
 bool zmk_hid_is_pressed(uint32_t usage);
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count);
+void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count, uint16_t scan_time,
+                     uint8_t buttons);
 #endif
 
 struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report();

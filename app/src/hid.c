@@ -23,6 +23,7 @@ struct zmk_hid_ptp_report ptp_report = {
     .report_id = ZMK_REPORT_ID_TRACKPAD,
     .body = {.finger = {.confidence_tip = 0, .contact_id = 0, .x = 0, .y = 0},
              .contact_count = 0,
+             .scan_time = 0,
              .buttons = (1 << 4)}};
 
 // Feature report for configuration
@@ -306,9 +307,12 @@ bool zmk_hid_is_pressed(uint32_t usage) {
     return false;
 }
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count) {
+void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count, uint16_t scan_time,
+                     uint8_t buttons) {
     ptp_report.body.finger = finger;
     ptp_report.body.contact_count = contact_count;
+    ptp_report.body.scan_time = scan_time;
+    ptp_report.body.buttons = buttons;
 }
 #endif
 

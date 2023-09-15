@@ -20,6 +20,7 @@ struct gen4_finger_data {
 
 struct gen4_data {
     uint8_t contacts, btns, finger_id;
+    uint16_t scan_time;
     struct gen4_finger_data finger;
     bool in_int;
 #ifdef CONFIG_GEN4_TRIGGER

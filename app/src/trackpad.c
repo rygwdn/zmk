@@ -14,6 +14,9 @@ const struct device *trackpad = DEVICE_DT_GET(DT_INST(0, cirque_gen4));
 static zmk_trackpad_finger_contacts_t present_contacts = 0;
 static zmk_trackpad_finger_contacts_t contacts_to_send = 0;
 
+static uint8_t btns;
+static uint16_t scantime;
+
 static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
@@ -37,10 +40,15 @@ static void handle_trackpad(const struct device *dev, const struct sensor_trigge
     }
     LOG_DBG("Trackpad handler trigd %d", 0);
 
-    struct sensor_value contacts, confidence_tip, id, x, y;
+    struct sensor_value contacts, confidence_tip, id, x, y, buttons, scan_time;
     sensor_channel_get(dev, SENSOR_CHAN_CONTACTS, &contacts);
+    sensor_channel_get(dev, SENSOR_CHAN_BUTTONS, &buttons);
+    sensor_channel_get(dev, SENSOR_CHAN_SCAN_TIME, &scan_time);
     // expects bitmap format
     present_contacts = contacts.val1;
+    // Buttons and scan time
+    btns = buttons.val1;
+    scantime = scan_time.val1;
     // released Fingers
     sensor_channel_get(dev, SENSOR_CHAN_X, &x);
     sensor_channel_get(dev, SENSOR_CHAN_Y, &y);
@@ -60,7 +68,7 @@ static void zmk_trackpad_tick(struct k_work *work) {
         for (int i = 0; i < CONFIG_ZMK_TRACKPAD_MAX_FINGERS; i++)
             if (contacts_to_send & BIT(i)) {
                 LOG_DBG("Trackpad sendy thing trigd %d", i);
-                zmk_hid_ptp_set(fingers[i], present_contacts);
+                zmk_hid_ptp_set(fingers[i], present_contacts, scantime, btns);
                 zmk_endpoints_send_ptp_report();
                 contacts_to_send &= !BIT(i);
                 return;
