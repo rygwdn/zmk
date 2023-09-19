@@ -10,6 +10,7 @@
 #include <zephyr/device.h>
 #include <drivers/behavior.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/random/rand32.h>
 #include <zmk/behavior.h>
 
 #include <zmk/endpoints.h>
@@ -108,7 +109,7 @@ static int sarcasm_keycode_state_changed_listener(const zmk_event_t *eh) {
 
         const struct behavior_sarcasm_config *config = dev->config;
 
-        if (zmk_hid_get_explicit_mods() == 0 && k_uptime_get() % 2 == 1) {
+        if (zmk_hid_get_explicit_mods() == 0 && sys_rand32_get() % 2 == 1) {
             sarcasm_enhance_usage(config, ev);
         }
     }
