@@ -167,17 +167,18 @@ static void zmk_rgb_underglow_effect_solid() {
 }
 
 static void zmk_rgb_underglow_effect_breathe() {
-    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-        struct zmk_led_hsb hsb = state.color;
-        hsb.b = abs(state.animation_step - 1200) / 12;
+    struct zmk_led_hsb hsb = state.color;
 
-        pixels[i] = hsb_to_rgb(hsb_scale_zero_max(hsb));
+    // Only set lights if battery information available, otherwise set to blue
+    if (DT_HAS_CHOSEN(zmk_battery)) {
+        uint8_t soc = zmk_battery_state_of_charge();
+        hsb.h = (soc * 1.2);
+    } else {
+        hsb.h = 240;
     }
-
-    state.animation_step += state.animation_speed * 10;
-
-    if (state.animation_step > 2400) {
-        state.animation_step = 0;
+    hsb.s = SAT_MAX;
+    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+        pixels[i] = hsb_to_rgb(hsb_scale_min_max(hsb));
     }
 }
 
