@@ -114,7 +114,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Logical) */
-    HID_COLLECTION(HID_COLLECTION_LOGICAL),
+    HID_COLLECTION(HID_COLLECTION_PHYSICAL),
     /* LOGICAL_MINIMUM (0) */
     HID_LOGICAL_MIN8(0),
     /* LOGICAL_MAXIMUM (1) */
@@ -213,7 +213,11 @@ static const uint8_t zmk_hid_report_desc[] = {
     0xff,
     0x00,
     0x00, //     PHYSICAL_MAXIMUM (65535)
-    HID_LOGICAL_MAX16(0xff, 0xff),
+    0x27,
+    0xff,
+    0xff,
+    0x00,
+    0x00, // Logical Maximum
     HID_REPORT_SIZE(16),
     HID_REPORT_COUNT(1),
     HID_USAGE(HID_USAGE_DIGITIZERS_SCAN_TIME),
@@ -232,6 +236,9 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* LOGICAL_MAXIMUM (1) */
     HID_LOGICAL_MIN8(0),
     HID_LOGICAL_MAX8(1),
+    0x46,
+    0x01,
+    0x00, // Physical max
     /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
     /* REPORT_SIZE (1) */
