@@ -17,6 +17,10 @@ static zmk_trackpad_finger_contacts_t contacts_to_send = 0;
 static uint8_t btns;
 static uint16_t scantime;
 
+static bool mousemode;
+static bool buttonmode;
+static bool surfacemode;
+
 static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
@@ -32,7 +36,11 @@ struct k_work_q *zmk_trackpad_work_q() {
 #endif
 }
 
-static void handle_trackpad(const struct device *dev, const struct sensor_trigger *trig) {
+void zmk_trackpad_set_button_mode(bool button_mode);
+
+void zmk_trackpad_set_surface_mode(bool surface_mode);
+
+static void handle_trackpad_ptp(const struct device *dev, const struct sensor_trigger *trig) {
     int ret = sensor_sample_fetch(dev);
     if (ret < 0) {
         LOG_ERR("fetch: %d", ret);
@@ -63,7 +71,10 @@ static void handle_trackpad(const struct device *dev, const struct sensor_trigge
 }
 
 static void zmk_trackpad_tick(struct k_work *work) {
-    if (contacts_to_send) {
+    if (mousemode) {
+        zmk_hid_touchpad_mouse_set();
+        zmk_endpoints_send_mouse_report();
+    } else if (contacts_to_send) {
         // LOG_DBG("Trackpad sendy thing trigd %d", 0);
         for (int i = 0; i < CONFIG_ZMK_TRACKPAD_MAX_FINGERS; i++)
             if (contacts_to_send & BIT(i)) {
@@ -78,22 +89,48 @@ static void zmk_trackpad_tick(struct k_work *work) {
 
 K_WORK_DEFINE(trackpad_work, zmk_trackpad_tick);
 
+static void handle_mouse_mode(const struct device *dev, const struct sensor_trigger *trig) {
+    int ret = sensor_sample_fetch(dev);
+    if (ret < 0) {
+        LOG_ERR("fetch: %d", ret);
+        return;
+    }
+    LOG_DBG("Trackpad handler trigd in mouse mode %d", 0);
+
+    k_work_submit_to_queue(zmk_trackpad_work_q(), &trackpad_work);
+}
+
 static void zmk_trackpad_tick_handler(struct k_timer *timer) {
     k_work_submit_to_queue(zmk_trackpad_work_q(), &trackpad_work);
 }
 
 K_TIMER_DEFINE(trackpad_tick, zmk_trackpad_tick_handler, NULL);
 
-static int trackpad_init() {
+void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
     struct sensor_trigger trigger = {
         .type = SENSOR_TRIG_DATA_READY,
         .chan = SENSOR_CHAN_ALL,
     };
-    if (sensor_trigger_set(trackpad, &trigger, handle_trackpad) < 0) {
-        LOG_ERR("can't set trigger");
-        return -EIO;
-    };
-    k_timer_start(&trackpad_tick, K_NO_WAIT, K_MSEC(CONFIG_ZMK_TRACKPAD_TICK_DURATION));
+    struct sensor_value attr;
+    attr.val1 = mouse_mode;
+    mousemode = mouse_mode;
+    sensor_attr_set(trackpad, SENSOR_CHAN_ALL, SENSOR_ATTR_CONFIGURATION, &attr);
+    if (mouse_mode) {
+        if (sensor_trigger_set(trackpad, &trigger, handle_mouse_mode) < 0) {
+            LOG_ERR("can't set trigger mouse mode");
+            return -EIO;
+        };
+    } else {
+        k_timer_start(&trackpad_tick, K_NO_WAIT, K_MSEC(CONFIG_ZMK_TRACKPAD_TICK_DURATION));
+        if (sensor_trigger_set(trackpad, &trigger, handle_trackpad_ptp) < 0) {
+            LOG_ERR("can't set trigger");
+            return -EIO;
+        };
+    }
+}
+
+static int trackpad_init() {
+    zmk_trackpad_set_mouse_mode(true);
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
     k_work_queue_start(&trackpad_work_q, trackpad_work_stack_area,
                        K_THREAD_STACK_SIZEOF(trackpad_work_stack_area),
