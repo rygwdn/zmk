@@ -25,6 +25,7 @@
 #define ZMK_REPORT_ID_FEATURE_PTPHQA 0x07
 #define ZMK_REPORT_ID_FEATURE_PTP_CONFIGURATION 0x08
 #define ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE 0x09
+#define ZMK_REPORT_ID_TRACKPAD_MOUSE 0x0a
 
 static const uint8_t zmk_hid_report_desc[] = {
     HID_USAGE_PAGE(HID_USAGE_GEN_DESKTOP),
@@ -99,6 +100,39 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_INPUT(0x00),
     HID_END_COLLECTION,
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+    // Mouse report for PTP mode
+    HID_USAGE_PAGE(HID_USAGE_GD),
+    HID_USAGE(HID_USAGE_GD_MOUSE),
+    HID_COLLECTION(HID_COLLECTION_APPLICATION),
+    HID_REPORT_ID(ZMK_REPORT_ID_TRACKPAD_MOUSE),
+    HID_USAGE(HID_USAGE_GD_POINTER),
+    HID_COLLECTION(HID_COLLECTION_PHYSICAL),
+    // Button
+    HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
+    HID_USAGE_MIN8(1),
+    HID_USAGE_MAX8(2),
+    HID_LOGICAL_MIN8(0),
+    HID_LOGICAL_MAX8(1),
+    HID_REPORT_SIZE(1),
+    HID_REPORT_COUNT(2),
+    HID_INPUT(0x02),
+    HID_REPORT_COUNT(6),
+    HID_INPUT(0x03),
+    // Axes
+    HID_USAGE_PAGE(HID_USAGE_GD),
+    HID_USAGE(HID_USAGE_GD_X),
+    HID_USAGE(HID_USAGE_GD_Y),
+    HID_USAGE(HID_USAGE_GD_WHEEL),
+    // -127 -> 127
+    HID_LOGICAL_MIN8(0x81),
+    HID_LOGICAL_MAX8(0x7f),
+    HID_REPORT_SIZE(8),
+    HID_REPORT_COUNT(3),
+    // Var rel input
+    HID_INPUT(0x06),
+    HID_END_COLLECTION,
+    HID_END_COLLECTION,
+
     //  PTP Touchpad HID with inspiration from osmakari
     /* USAGE_PAGE (Digitizers) */
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
@@ -114,7 +148,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Logical) */
-    HID_COLLECTION(HID_COLLECTION_PHYSICAL),
+    HID_COLLECTION(HID_COLLECTION_LOGICAL),
     /* LOGICAL_MINIMUM (0) */
     HID_LOGICAL_MIN8(0),
     /* LOGICAL_MAXIMUM (1) */
@@ -192,17 +226,9 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_END_COLLECTION,
     /* USAGE_PAGE (Digitizers) */
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-    /* USAGE (Contact count) */
-    HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT),
-    /* LOGICAL_MAXIMUM (127) */
-    HID_LOGICAL_MAX8(0x7F),
-    /* REPORT_COUNT (1) */
-    HID_REPORT_COUNT(1),
-    /* REPORT_SIZE (8) */
-    HID_REPORT_SIZE(8),
-    /* INPUT(Data, Var, Abs) */
-    HID_INPUT(0x02),
-    // scan time
+    // Usage scan time
+    HID_USAGE(HID_USAGE_DIGITIZERS_SCAN_TIME),
+    //
     0x55,
     0x0C, //    UNIT_EXPONENT (-4)
     0x66,
@@ -220,47 +246,39 @@ static const uint8_t zmk_hid_report_desc[] = {
     0x00, // Logical Maximum
     HID_REPORT_SIZE(16),
     HID_REPORT_COUNT(1),
-    HID_USAGE(HID_USAGE_DIGITIZERS_SCAN_TIME),
+
+    HID_INPUT(0x02),
+    // Physmax 0
+    0x45,
+    0x00,
+    /* USAGE (Contact count) */
+    HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT),
+    /* LOGICAL_MAXIMUM (5) */
+    HID_LOGICAL_MAX8(0x05),
+    /* REPORT_COUNT (1) */
+    HID_REPORT_COUNT(1),
+    /* REPORT_SIZE (8) */
+    HID_REPORT_SIZE(8),
+    /* INPUT(Data, Var, Abs) */
     HID_INPUT(0x02),
 
-    // Button report herre for compat, isn't actuallyy used yet :)
+    // Button report
     HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
     /* USAGE (Button 1) */
     HID_USAGE(0x01),
     HID_USAGE(0x02),
-    HID_USAGE(0x03),
+    HID_USAGE(0x03), /* LOGICAL_MAXIMUM (1) */
+    HID_LOGICAL_MAX8(1),
     /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
     /* REPORT_COUNT (1) */
     HID_REPORT_COUNT(3),
-    /* LOGICAL_MAXIMUM (1) */
-    HID_LOGICAL_MIN8(0),
-    HID_LOGICAL_MAX8(1),
-    0x46,
-    0x01,
-    0x00, // Physical max
     /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
     /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
     /* REPORT_COUNT (byte padding) */
-    HID_REPORT_COUNT(1),
-    /* INPUT (Cnst,Var,Abs) */
-    HID_INPUT(0x03),
-    // Surface switch for mac
-    HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-    /* USAGE (Surface switch) */
-    HID_USAGE(HID_USAGE_DIGITIZERS_SURFACE_SWITCH),
-    /* REPORT_COUNT (1) */
-    HID_REPORT_COUNT(1),
-    /* REPORT_SIZE (8) */
-    HID_REPORT_SIZE(1),
-    /* INPUT(Data, Var, Abs) */
-    HID_INPUT(0x02),
-    /* REPORT_SIZE (1) */
-    HID_REPORT_SIZE(1),
-    /* REPORT_COUNT (byte padding) */
-    HID_REPORT_COUNT(3),
+    HID_REPORT_COUNT(5),
     /* INPUT (Cnst,Var,Abs) */
     HID_INPUT(0x03),
 
@@ -272,15 +290,14 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_ID(ZMK_REPORT_ID_FEATURE_PTP_CAPABILITIES),
     /* USAGE (Contact Count Maximum) */
     HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT_MAXIMUM),
+    HID_REPORT_SIZE(8),
+    HID_REPORT_COUNT(1),
+    HID_LOGICAL_MAX8(0x05),
+    HID_FEATURE(0x02),
+
+    HID_LOGICAL_MAX8(0x7F),
     /* USAGE (Pad Type) */
     HID_USAGE(HID_USAGE_DIGITIZERS_PAD_TYPE),
-    /* REPORT_SIZE (4) */
-    HID_REPORT_SIZE(4),
-    /* REPORT_COUNT (2) */
-    HID_REPORT_COUNT(2),
-    /* LOGICAL_MAXIMUM (15) */
-    HID_LOGICAL_MIN8(0),
-    HID_LOGICAL_MAX8(0x0F),
     /* FEATURE (Data, Var, Abs) */
     HID_FEATURE(0x02),
 
@@ -314,6 +331,23 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_USAGE(HID_USAGE_DIGITIZERS_DEVICE_CONFIGURATION),
 
     HID_COLLECTION(HID_COLLECTION_APPLICATION),
+    // PUT THE INPUT MODE REPORT HERE
+    // Report ID input mode
+    HID_REPORT_ID(ZMK_REPORT_ID_FEATURE_PTP_CONFIGURATION),
+    // Finger Usage
+    HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
+    // Logical collection
+    HID_COLLECTION(HID_COLLECTION_LOGICAL),
+    // Input mode usage
+    HID_USAGE(HID_USAGE_DIGITIZERS_DEVICE_MODE),
+    // Min 0 max 10
+    HID_LOGICAL_MIN8(0),
+    HID_LOGICAL_MAX8(10),
+    HID_REPORT_SIZE(8),
+    HID_REPORT_COUNT(1),
+    HID_FEATURE(0x02),
+    HID_END_COLLECTION,
+
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Physical) */
@@ -396,10 +430,10 @@ struct zmk_ptp_finger {
 struct zmk_hid_ptp_report_body {
     // Finger reporting
     struct zmk_ptp_finger finger;
-    // Contact count
-    uint8_t contact_count;
     // scantime
     uint16_t scan_time;
+    // Contact count
+    uint8_t contact_count;
     // Buttons /surfaceswitch
     uint8_t buttons;
 
@@ -413,11 +447,30 @@ struct zmk_hid_ptp_report {
 
 } __packed;
 
+struct zmk_hid_touchpad_mouse_report_body {
+    uint8_t buttons;
+    int8_t xDelta;
+    int8_t yDelta;
+    int8_t scrollDelta;
+} __packed;
+
+struct zmk_hid_touchpad_mouse_report {
+    uint8_t report_id;
+    struct zmk_hid_touchpad_mouse_report_body body;
+} __packed;
+
 // Feature report for configuration
 struct zmk_hid_ptp_feature_selective_report {
     uint8_t report_id;
     // Selective reporting: Surface switch (bit 0), Button switch (bit 1)
     uint8_t selective_reporting;
+} __packed;
+
+// Feature report for mode
+struct zmk_hid_ptp_feature_mode_report {
+    uint8_t report_id;
+    // input mode, 0 for mouse, 3 for trackpad
+    uint8_t mode;
 } __packed;
 
 // Feature report for certification
@@ -437,7 +490,8 @@ struct zmk_hid_ptp_feature_capabilities_report {
     // Max touches (L 4bit) and pad type (H 4bit):
     // Max touches: number 3-5
     // Pad type:    0 for Depressible, 1 for Non-depressible, 2 for Non-clickable
-    uint8_t max_touches_pad_type;
+    uint8_t max_touches;
+    uint8_t pad_type;
 
 } __packed;
 
@@ -472,6 +526,7 @@ bool zmk_hid_is_pressed(uint32_t usage);
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count, uint16_t scan_time,
                      uint8_t buttons);
+void zmk_hid_touchpad_mouse_set(uint8_t buttons, int8_t xDelta, int8_t yDelta, int8_t scrollDelta);
 #endif
 
 struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report();
@@ -480,6 +535,8 @@ struct zmk_hid_consumer_report *zmk_hid_get_consumer_report();
 struct zmk_hid_ptp_report *zmk_hid_get_ptp_report();
 struct zmk_hid_ptp_feature_selective_report *zmk_hid_ptp_get_feature_selective_report();
 void zmk_hid_ptp_set_feature_selective_report(uint8_t selective_report);
+struct zmk_hid_ptp_feature_mode_report *zmk_hid_ptp_get_feature_mode_report();
+void zmk_hid_ptp_set_feature_mode_report(uint8_t mode_report);
 struct zmk_hid_ptp_feature_certification_report *zmk_hid_ptp_get_feature_certification_report();
 struct zmk_hid_ptp_feature_capabilities_report *zmk_hid_ptp_get_feature_capabilities_report();
 #endif

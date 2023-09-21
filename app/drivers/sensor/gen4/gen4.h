@@ -10,12 +10,20 @@
 #define REPORT_ID_SHIFT 2
 
 #define PTP_REPORT_ID (0x01)
+#define MOUSE_REPORT_ID 0x06
 
 #define GEN4_ADDRESS 0x2C
 
 struct gen4_finger_data {
     uint8_t confidence_tip;
     uint16_t x, y;
+};
+
+struct gen4_mouse_data {
+    uint8_t buttons;
+    int8_t xDelta;
+    int8_t yDelta;      /**< Change in vertical movement */
+    int8_t scrollDelta; /**< Vertical Scroll value */
 };
 
 struct gen4_data {

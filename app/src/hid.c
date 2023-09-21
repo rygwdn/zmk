@@ -10,6 +10,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/hid.h>
 #include <dt-bindings/zmk/modifiers.h>
+#include <zmk/trackpad.h>
 
 static struct zmk_hid_keyboard_report keyboard_report = {
     .report_id = 1, .body = {.modifiers = 0, ._reserved = 0, .keys = {0}}};
@@ -26,9 +27,17 @@ struct zmk_hid_ptp_report ptp_report = {
              .scan_time = 0,
              .buttons = (1 << 4)}};
 
+struct zmk_hid_touchpad_mouse_report mouse_report = {
+    .report_id = ZMK_REPORT_ID_TRACKPAD_MOUSE,
+    .body = {.buttons = 0, .xDelta = 0, .yDelta = 0, .scrollDelta = 0}};
+
 // Feature report for configuration
 struct zmk_hid_ptp_feature_selective_report ptp_feature_selective_report = {
     .report_id = ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE, .selective_reporting = 3};
+
+// Feature report for input mode
+struct zmk_hid_ptp_feature_mode_report ptp_feature_mode_report = {
+    .report_id = ZMK_REPORT_ID_FEATURE_PTP_CONFIGURATION, .mode = 0};
 
 // Feature report for ptphqa
 struct zmk_hid_ptp_feature_certification_report ptp_feature_certification_report = {
@@ -56,7 +65,8 @@ struct zmk_hid_ptp_feature_certification_report ptp_feature_certification_report
 // Feature report for device capabilities
 struct zmk_hid_ptp_feature_capabilities_report ptp_feature_capabilities_report = {
     .report_id = ZMK_REPORT_ID_FEATURE_PTP_CAPABILITIES,
-    .max_touches_pad_type = CONFIG_ZMK_TRACKPAD_MAX_FINGERS | (PTP_PAD_TYPE_NON_CLICKABLE << 4)};
+    .max_touches = CONFIG_ZMK_TRACKPAD_MAX_FINGERS,
+    .pad_type = PTP_PAD_TYPE_NON_CLICKABLE};
 #endif
 
 // Keep track of how often a modifier was pressed.
@@ -314,6 +324,13 @@ void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count, uint16
     ptp_report.body.scan_time = scan_time;
     ptp_report.body.buttons = buttons;
 }
+
+void zmk_hid_touchpad_mouse_set(uint8_t buttons, int8_t xDelta, int8_t yDelta, int8_t scrollDelta) {
+    mouse_report.body.buttons = buttons;
+    mouse_report.body.xDelta = xDelta;
+    mouse_report.body.yDelta = yDelta;
+    mouse_report.body.scrollDelta = scrollDelta;
+}
 #endif
 
 struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report() {
@@ -335,6 +352,18 @@ struct zmk_hid_ptp_feature_selective_report *zmk_hid_ptp_get_feature_selective_r
 
 void zmk_hid_ptp_set_feature_selective_report(uint8_t selective_report) {
     ptp_feature_selective_report.selective_reporting = selective_report;
+}
+
+struct zmk_hid_ptp_feature_mode_report *zmk_hid_ptp_get_feature_mode_report() {
+    return &ptp_feature_mode_report;
+}
+
+void zmk_hid_ptp_set_feature_mode_report(uint8_t mode) {
+    ptp_feature_mode_report.mode = mode;
+    if (mode == 3)
+        zmk_trackpad_set_mouse_mode(true);
+    else
+        zmk_trackpad_set_mouse_mode(false);
 }
 
 struct zmk_hid_ptp_feature_certification_report *zmk_hid_ptp_get_feature_certification_report() {
