@@ -22,6 +22,7 @@ static bool buttonmode;
 static bool surfacemode;
 
 static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
+static struct zmk_hid_touchpad_mouse_report_body mouse;
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
 K_THREAD_STACK_DEFINE(trackpad_work_stack_area, CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_STACK_SIZE);
@@ -96,6 +97,18 @@ static void handle_mouse_mode(const struct device *dev, const struct sensor_trig
         return;
     }
     LOG_DBG("Trackpad handler trigd in mouse mode %d", 0);
+    int ret = sensor_sample_fetch(dev);
+    if (ret < 0) {
+        LOG_ERR("fetch: %d", ret);
+        return;
+    }
+    LOG_DBG("Trackpad handler trigd %d", 0);
+
+    struct sensor_value x, y, buttons, wheel;
+    sensor_channel_get(dev, SENSOR_CHAN_XDELTA, &x);
+    sensor_channel_get(dev, SENSOR_CHAN_YDELTA, &y);
+    sensor_channel_get(dev, SENSOR_CHAN_BUTTONS, &buttons);
+    sensor_channel_get(dev, SENSOR_CHAN_WHEEL, &wheel);
 
     k_work_submit_to_queue(zmk_trackpad_work_q(), &trackpad_work);
 }

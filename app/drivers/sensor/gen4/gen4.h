@@ -20,7 +20,6 @@ struct gen4_finger_data {
 };
 
 struct gen4_mouse_data {
-    uint8_t buttons;
     int8_t xDelta;
     int8_t yDelta;      /**< Change in vertical movement */
     int8_t scrollDelta; /**< Vertical Scroll value */
@@ -30,6 +29,8 @@ struct gen4_data {
     uint8_t contacts, btns, finger_id;
     uint16_t scan_time;
     struct gen4_finger_data finger;
+    struct gen4_mouse_data mouse;
+    bool mousemode;
     bool in_int;
 #ifdef CONFIG_GEN4_TRIGGER
     const struct device *dev;

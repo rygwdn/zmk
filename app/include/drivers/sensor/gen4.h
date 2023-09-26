@@ -15,6 +15,9 @@ enum sensor_channel_gen4 {
     SENSOR_CHAN_CONTACTS,
     SENSOR_CHAN_SCAN_TIME,
     SENSOR_CHAN_BUTTONS,
+    SENSOR_CHAN_WHEEL,
+    SENSOR_CHAN_XDELTA,
+    SENSOR_CHAN_YDELTA,
 };
 
 #ifdef __cplusplus
