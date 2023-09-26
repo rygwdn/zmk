@@ -114,7 +114,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     /* USAGE (Finger) */
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
     /* COLLECTION (Logical) */
-    HID_COLLECTION(HID_COLLECTION_PHYSICAL),
+    HID_COLLECTION(HID_COLLECTION_LOGICAL),
     /* LOGICAL_MINIMUM (0) */
     HID_LOGICAL_MIN8(0),
     /* LOGICAL_MAXIMUM (1) */
@@ -153,7 +153,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_USAGE_PAGE(HID_USAGE_GD),
     /* LOGICAL_MINIMUM (0) */
     HID_LOGICAL_MIN8(0),
-    /* LOGICAL_MAXIMUM (4095) */
+    /* LOGICAL_MAXIMUM (defined inkconfic) */
     HID_LOGICAL_MAX16((CONFIG_ZMK_TRACKPAD_LOGICAL_X & 0xFF),
                       ((CONFIG_ZMK_TRACKPAD_LOGICAL_X >> 8) & 0xFF)),
     /* REPORT_SIZE (16) */
@@ -192,17 +192,9 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_END_COLLECTION,
     /* USAGE_PAGE (Digitizers) */
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-    /* USAGE (Contact count) */
-    HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT),
-    /* LOGICAL_MAXIMUM (127) */
-    HID_LOGICAL_MAX8(0x7F),
-    /* REPORT_COUNT (1) */
-    HID_REPORT_COUNT(1),
-    /* REPORT_SIZE (8) */
-    HID_REPORT_SIZE(8),
-    /* INPUT(Data, Var, Abs) */
-    HID_INPUT(0x02),
-    // scan time
+    // Usage scan time
+    HID_USAGE(HID_USAGE_DIGITIZERS_SCAN_TIME),
+    //
     0x55,
     0x0C, //    UNIT_EXPONENT (-4)
     0x66,
@@ -220,47 +212,39 @@ static const uint8_t zmk_hid_report_desc[] = {
     0x00, // Logical Maximum
     HID_REPORT_SIZE(16),
     HID_REPORT_COUNT(1),
-    HID_USAGE(HID_USAGE_DIGITIZERS_SCAN_TIME),
+
+    HID_INPUT(0x02),
+    // Physmax 0
+    0x45,
+    0x00,
+    /* USAGE (Contact count) */
+    HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT),
+    /* LOGICAL_MAXIMUM (5) */
+    HID_LOGICAL_MAX8(0x05),
+    /* REPORT_COUNT (1) */
+    HID_REPORT_COUNT(1),
+    /* REPORT_SIZE (8) */
+    HID_REPORT_SIZE(8),
+    /* INPUT(Data, Var, Abs) */
     HID_INPUT(0x02),
 
-    // Button report herre for compat, isn't actuallyy used yet :)
+    // Button report
     HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
     /* USAGE (Button 1) */
     HID_USAGE(0x01),
     HID_USAGE(0x02),
-    HID_USAGE(0x03),
+    HID_USAGE(0x03), /* LOGICAL_MAXIMUM (1) */
+    HID_LOGICAL_MAX8(1),
     /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
     /* REPORT_COUNT (1) */
     HID_REPORT_COUNT(3),
-    /* LOGICAL_MAXIMUM (1) */
-    HID_LOGICAL_MIN8(0),
-    HID_LOGICAL_MAX8(1),
-    0x46,
-    0x01,
-    0x00, // Physical max
     /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
     /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
     /* REPORT_COUNT (byte padding) */
-    HID_REPORT_COUNT(1),
-    /* INPUT (Cnst,Var,Abs) */
-    HID_INPUT(0x03),
-    // Surface switch for mac
-    HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-    /* USAGE (Surface switch) */
-    HID_USAGE(HID_USAGE_DIGITIZERS_SURFACE_SWITCH),
-    /* REPORT_COUNT (1) */
-    HID_REPORT_COUNT(1),
-    /* REPORT_SIZE (8) */
-    HID_REPORT_SIZE(1),
-    /* INPUT(Data, Var, Abs) */
-    HID_INPUT(0x02),
-    /* REPORT_SIZE (1) */
-    HID_REPORT_SIZE(1),
-    /* REPORT_COUNT (byte padding) */
-    HID_REPORT_COUNT(3),
+    HID_REPORT_COUNT(5),
     /* INPUT (Cnst,Var,Abs) */
     HID_INPUT(0x03),
 
@@ -272,15 +256,12 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_ID(ZMK_REPORT_ID_FEATURE_PTP_CAPABILITIES),
     /* USAGE (Contact Count Maximum) */
     HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT_MAXIMUM),
+    HID_REPORT_SIZE(8),
+    HID_REPORT_COUNT(1),
+    HID_LOGICAL_MAX8(0x05),
+    HID_FEATURE(0x02),
     /* USAGE (Pad Type) */
     HID_USAGE(HID_USAGE_DIGITIZERS_PAD_TYPE),
-    /* REPORT_SIZE (4) */
-    HID_REPORT_SIZE(4),
-    /* REPORT_COUNT (2) */
-    HID_REPORT_COUNT(2),
-    /* LOGICAL_MAXIMUM (15) */
-    HID_LOGICAL_MIN8(0),
-    HID_LOGICAL_MAX8(0x0F),
     /* FEATURE (Data, Var, Abs) */
     HID_FEATURE(0x02),
 
@@ -396,10 +377,10 @@ struct zmk_ptp_finger {
 struct zmk_hid_ptp_report_body {
     // Finger reporting
     struct zmk_ptp_finger finger;
-    // Contact count
-    uint8_t contact_count;
     // scantime
     uint16_t scan_time;
+    // Contact count
+    uint8_t contact_count;
     // Buttons /surfaceswitch
     uint8_t buttons;
 
@@ -437,7 +418,8 @@ struct zmk_hid_ptp_feature_capabilities_report {
     // Max touches (L 4bit) and pad type (H 4bit):
     // Max touches: number 3-5
     // Pad type:    0 for Depressible, 1 for Non-depressible, 2 for Non-clickable
-    uint8_t max_touches_pad_type;
+    uint8_t max_touches;
+    uint8_t pad_type;
 
 } __packed;
 

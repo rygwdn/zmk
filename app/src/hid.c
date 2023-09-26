@@ -56,7 +56,8 @@ struct zmk_hid_ptp_feature_certification_report ptp_feature_certification_report
 // Feature report for device capabilities
 struct zmk_hid_ptp_feature_capabilities_report ptp_feature_capabilities_report = {
     .report_id = ZMK_REPORT_ID_FEATURE_PTP_CAPABILITIES,
-    .max_touches_pad_type = CONFIG_ZMK_TRACKPAD_MAX_FINGERS | (PTP_PAD_TYPE_NON_CLICKABLE << 4)};
+    .max_touches = CONFIG_ZMK_TRACKPAD_MAX_FINGERS,
+    .pad_type = PTP_PAD_TYPE_NON_CLICKABLE};
 #endif
 
 // Keep track of how often a modifier was pressed.
