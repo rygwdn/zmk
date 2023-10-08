@@ -132,6 +132,12 @@ static struct led_rgb hsb_to_rgb(struct zmk_led_hsb hsb) {
 }
 
 static void zmk_rgb_underglow_effect_solid() {
+    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+        pixels[i] = hsb_to_rgb(hsb_scale_min_max(state.color));
+    }
+}
+
+static void zmk_rgb_underglow_effect_breathe() {
     if (zmk_usb_is_powered())
         if (zmk_battery_charging()) {
             for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
@@ -166,7 +172,7 @@ static void zmk_rgb_underglow_effect_solid() {
     }
 }
 
-static void zmk_rgb_underglow_effect_breathe() {
+static void zmk_rgb_underglow_effect_spectrum() {
     struct zmk_led_hsb hsb = state.color;
 
     // Only set lights if battery information available, otherwise set to blue
@@ -182,7 +188,7 @@ static void zmk_rgb_underglow_effect_breathe() {
     }
 }
 
-static void zmk_rgb_underglow_effect_spectrum() {
+static void zmk_rgb_underglow_effect_swirl() {
     for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
         struct zmk_led_hsb hsb = state.color;
         hsb.h = state.animation_step;
@@ -191,18 +197,6 @@ static void zmk_rgb_underglow_effect_spectrum() {
     }
 
     state.animation_step += state.animation_speed;
-    state.animation_step = state.animation_step % HUE_MAX;
-}
-
-static void zmk_rgb_underglow_effect_swirl() {
-    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
-        struct zmk_led_hsb hsb = state.color;
-        hsb.h = (HUE_MAX / STRIP_NUM_PIXELS * i + state.animation_step) % HUE_MAX;
-
-        pixels[i] = hsb_to_rgb(hsb_scale_min_max(hsb));
-    }
-
-    state.animation_step += state.animation_speed * 2;
     state.animation_step = state.animation_step % HUE_MAX;
 }
 
