@@ -200,9 +200,9 @@ int zmk_endpoints_send_ptp_report() {
 
     struct zmk_hid_ptp_report *ptp_report = zmk_hid_get_ptp_report();
 
-    switch (current_endpoint) {
+    switch (current_instance.transport) {
 #if IS_ENABLED(CONFIG_ZMK_USB)
-    case ZMK_ENDPOINT_USB: {
+    case ZMK_TRANSPORT_USB: {
         int err = zmk_usb_hid_send_report((uint8_t *)ptp_report, sizeof(*ptp_report));
         if (err) {
             LOG_ERR("FAILED TO SEND OVER USB: %d", err);
@@ -212,7 +212,7 @@ int zmk_endpoints_send_ptp_report() {
 #endif /* IS_ENABLED(CONFIG_ZMK_USB) */
 
 #if IS_ENABLED(CONFIG_ZMK_BLE)
-    case ZMK_ENDPOINT_BLE: {
+    case ZMK_TRANSPORT_BLE: {
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
         int err = zmk_hog_send_ptp_report_direct(&ptp_report->body);
 #else
@@ -226,7 +226,7 @@ int zmk_endpoints_send_ptp_report() {
 #endif /* IS_ENABLED(CONFIG_ZMK_BLE) */
 
     default:
-        LOG_ERR("Unsupported endpoint %d", current_endpoint);
+        LOG_ERR("Unsupported endpoint %d", current_instance.transport);
         return -ENOTSUP;
     }
 }
