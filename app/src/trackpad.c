@@ -2,9 +2,9 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 
-#include "zmk/trackpad.h"
-#include "zmk/hid.h"
-#include "zmk/endpoints.h"
+#include <zmk/trackpad.h>
+#include <zmk/hid.h>
+#include <zmk/endpoints.h>
 #include "drivers/sensor/gen4.h"
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -102,4 +102,4 @@ static int trackpad_init() {
     return 0;
 }
 
-SYS_INIT(trackpad_init, APPLICATION, CONFIG_ZMK_KSCAN_INIT_PRIORITY);
+SYS_INIT(trackpad_init, APPLICATION, CONFIG_KSCAN_INIT_PRIORITY);
