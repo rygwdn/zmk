@@ -69,3 +69,6 @@ int zmk_endpoints_toggle_transport(void);
 struct zmk_endpoint_instance zmk_endpoints_selected(void);
 
 int zmk_endpoints_send_report(uint16_t usage_page);
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+int zmk_endpoints_send_ptp_report();
+#endif

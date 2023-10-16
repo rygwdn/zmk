@@ -11,6 +11,7 @@
 #include <zephyr/usb/class/usb_hid.h>
 
 #include <zmk/usb.h>
+#include <zmk/usb_hid.h>
 #include <zmk/hid.h>
 #include <zmk/keymap.h>
 #include <zmk/hid_indicators.h>
@@ -31,15 +32,27 @@ static void in_ready_cb(const struct device *dev) { k_sem_give(&hid_sem); }
 #define HID_REPORT_TYPE_OUTPUT 0x200
 #define HID_REPORT_TYPE_FEATURE 0x300
 
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 static int set_report_cb(const struct device *dev, struct usb_setup_packet *setup, int32_t *len,
                          uint8_t **data) {
-    if ((setup->wValue & HID_GET_REPORT_TYPE_MASK) != HID_REPORT_TYPE_OUTPUT) {
+    if (((setup->wValue & HID_GET_REPORT_TYPE_MASK) != HID_REPORT_TYPE_FEATURE) |
+        ((setup->wValue & HID_GET_REPORT_TYPE_MASK) != HID_REPORT_TYPE_OUTPUT)) {
         LOG_ERR("Unsupported report type %d requested",
                 (setup->wValue & HID_GET_REPORT_TYPE_MASK) >> 8);
         return -ENOTSUP;
     }
-
     switch (setup->wValue & HID_GET_REPORT_ID_MASK) {
+    case ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE:
+        if (*len != sizeof(struct zmk_hid_ptp_feature_selective_report)) {
+            LOG_ERR("LED set report is malformed: length=%d", *len);
+            return -EINVAL;
+        } else {
+            struct zmk_hid_ptp_feature_selective_report *report =
+                (struct zmk_hid_ptp_feature_selective_report *)*data;
+            LOG_DBG("Selective report set %d", report->selective_reporting);
+            zmk_hid_ptp_set_feature_selective_report(report->selective_reporting);
+        }
+        break;
     case HID_REPORT_ID_LEDS:
         if (*len != sizeof(struct zmk_hid_led_report)) {
             LOG_ERR("LED set report is malformed: length=%d", *len);
@@ -50,53 +63,93 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
                 .transport = ZMK_TRANSPORT_USB,
             };
             zmk_hid_indicators_process_report(&report->body, endpoint);
-        }
-        break;
-    default:
-        LOG_ERR("Invalid report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);
-        return -EINVAL;
-    }
-
-    return 0;
-}
-
-static const struct hid_ops ops = {
-    .int_in_ready = in_ready_cb,
-    .set_report = set_report_cb,
-};
-
-int zmk_usb_hid_send_report(const uint8_t *report, size_t len) {
-    switch (zmk_usb_get_status()) {
-    case USB_DC_SUSPEND:
-        return usb_wakeup_request();
-    case USB_DC_ERROR:
-    case USB_DC_RESET:
-    case USB_DC_DISCONNECTED:
-    case USB_DC_UNKNOWN:
-        return -ENODEV;
-    default:
-        k_sem_take(&hid_sem, K_MSEC(30));
-        int err = hid_int_ep_write(hid_dev, report, len, NULL);
-
-        if (err) {
-            k_sem_give(&hid_sem);
+            break;
+        default:
+            LOG_ERR("Invalid report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);
+            return -EINVAL;
         }
 
-        return err;
-    }
-}
-
-static int zmk_usb_hid_init(const struct device *_arg) {
-    hid_dev = device_get_binding("HID_0");
-    if (hid_dev == NULL) {
-        LOG_ERR("Unable to locate HID device");
-        return -EINVAL;
+        return 0;
     }
 
-    usb_hid_register_device(hid_dev, zmk_hid_report_desc, sizeof(zmk_hid_report_desc), &ops);
-    usb_hid_init(hid_dev);
+    static int get_report_cb(const struct device *dev, struct usb_setup_packet *setup, int32_t *len,
+                             uint8_t **data) {
+        if ((setup->wValue & HID_GET_REPORT_TYPE_MASK) != HID_REPORT_TYPE_FEATURE) {
+            LOG_ERR("Unsupported report type %d requested",
+                    (setup->wValue & HID_GET_REPORT_TYPE_MASK) >> 8);
+            return -ENOTSUP;
+        }
 
-    return 0;
-}
+        switch (setup->wValue & HID_GET_REPORT_ID_MASK) {
+        case ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE:
 
-SYS_INIT(zmk_usb_hid_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+            *data = (uint8_t *)zmk_hid_ptp_get_feature_selective_report();
+            LOG_DBG("Selective report get %d", 0);
+            *len = sizeof(struct zmk_hid_ptp_feature_selective_report);
+            break;
+        case ZMK_REPORT_ID_FEATURE_PTPHQA:
+
+            *data = (uint8_t *)zmk_hid_ptp_get_feature_certification_report();
+            LOG_DBG("certification report get %d", 0);
+            *len = sizeof(struct zmk_hid_ptp_feature_certification_report);
+
+            break;
+        case ZMK_REPORT_ID_FEATURE_PTP_CAPABILITIES:
+
+            *data = (uint8_t *)zmk_hid_ptp_get_feature_capabilities_report();
+            LOG_DBG("capabilities report get %d", 0);
+            *len = sizeof(struct zmk_hid_ptp_feature_capabilities_report);
+
+            break;
+        default:
+            LOG_ERR("Invalid report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);
+            return -EINVAL;
+        }
+
+        return 0;
+    }
+#endif
+
+    static const struct hid_ops ops = {
+        .int_in_ready = in_ready_cb,
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+        .set_report = set_report_cb,
+        .get_report = get_report_cb,
+#endif
+    };
+
+    int zmk_usb_hid_send_report(const uint8_t *report, size_t len) {
+        switch (zmk_usb_get_status()) {
+        case USB_DC_SUSPEND:
+            return usb_wakeup_request();
+        case USB_DC_ERROR:
+        case USB_DC_RESET:
+        case USB_DC_DISCONNECTED:
+        case USB_DC_UNKNOWN:
+            return -ENODEV;
+        default:
+            k_sem_take(&hid_sem, K_MSEC(30));
+            int err = hid_int_ep_write(hid_dev, report, len, NULL);
+
+            if (err) {
+                k_sem_give(&hid_sem);
+            }
+
+            return err;
+        }
+    }
+
+    static int zmk_usb_hid_init(const struct device *_arg) {
+        hid_dev = device_get_binding("HID_0");
+        if (hid_dev == NULL) {
+            LOG_ERR("Unable to locate HID device");
+            return -EINVAL;
+        }
+
+        usb_hid_register_device(hid_dev, zmk_hid_report_desc, sizeof(zmk_hid_report_desc), &ops);
+        usb_hid_init(hid_dev);
+
+        return 0;
+    }
+
+    SYS_INIT(zmk_usb_hid_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
