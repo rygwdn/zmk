@@ -54,7 +54,7 @@ static struct hids_report input = {
 };
 
 static struct hids_report led_indicators = {
-    .id = HID_REPORT_ID_LEDS,
+    .id = ZMK_REPORT_ID_LEDS,
     .type = HIDS_OUTPUT,
 };
 
