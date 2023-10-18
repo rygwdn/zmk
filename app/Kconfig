@@ -153,6 +153,10 @@ config ZMK_BLE_CLEAR_BONDS_ON_START
     bool "Configuration that clears all bond information from the keyboard on startup."
     default n
 
+config ZMK_BLE_BATTERY_REPORTING
+    bool "Explicitly enable or disable the BLE BAS reporting, can cause wakeups on MacOS"
+    default y
+
 # HID GATT notifications sent this way are *not* picked up by Linux, and possibly others.
 config BT_GATT_NOTIFY_MULTIPLE
     default n
@@ -314,7 +318,7 @@ config ZMK_BATTERY_REPORTING
     bool "Battery level detection/reporting"
     default n
     select SENSOR
-    select BT_BAS if ZMK_BLE
+    select BT_BAS if ZMK_BLE && ZMK_BLE_BATTERY_REPORTING
 
 config ZMK_IDLE_TIMEOUT
     int "Milliseconds of inactivity before entering idle state (OLED shutoff, etc)"

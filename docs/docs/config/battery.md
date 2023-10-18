@@ -11,10 +11,13 @@ See [Configuration Overview](index.md) for instructions on how to change these s
 
 Definition file: [zmk/app/Kconfig](https://github.com/zmkfirmware/zmk/blob/main/app/Kconfig)
 
-| Config                               | Type | Description                                            | Default |
-| ------------------------------------ | ---- | ------------------------------------------------------ | ------- |
-| `CONFIG_ZMK_BATTERY_REPORTING`       | bool | Enables/disables all battery level detection/reporting | n       |
-| `CONFIG_ZMK_BATTERY_REPORT_INTERVAL` | int  | Battery level report interval in seconds               | 60      |
+| Config                               | Type | Description                                                                                       | Default |
+| ------------------------------------ | ---- | ------------------------------------------------------------------------------------------------- | ------- |
+| `CONFIG_ZMK_BATTERY_REPORTING`       | bool | Enables/disables all battery level detection/reporting                                            | n       |
+| `CONFIG_ZMK_BATTERY_REPORT_INTERVAL` | int  | Battery level report interval in seconds                                                          | 60      |
+| `CONFIG_ZMK_BLE_BATTERY_REPORTING`   | bool | Enables/disables battery level reporting over BLE (Dependent on `CONFIG_ZMK_BATTERY_REPORTING=y`) | y       |
+
+Note: MacOS devices can be repeatedly woken up from sleep by the battery level reports
 
 ### Devicetree
 
