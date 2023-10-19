@@ -65,7 +65,14 @@ However the settings will only be saved after [`CONFIG_ZMK_SETTINGS_SAVE_DEBOUNC
 
 :::note Effect Selection
 
-When using the `RGB_EFS` or `RGB_MEFS` definitions you must also include a number as an argument in the keymap corresponding to the effect you want to select e.g. `RGB_EFS 0`
+When using the `RGB_EFS` or `RGB_MEFS` definitions you must also include a number as an argument in the keymap corresponding to the effect you want to select e.g. `RGB_EFS 0`. There are 4 RGB effects currently, defined in [`dt-bindings/zmk/rgb.h`](https://github.com/zmkfirmware/zmk/blob/main/app/include/dt-bindings/zmk/rgb.h). They correspond to the options for [`CONFIG_ZMK_RGB_UNDERGLOW_EFF_START`](../config/underglow.md#kconfig).
+
+| Value            | Effect                                     |
+| ---------------- | ------------------------------------------ |
+| RGB_EFF_SOLID    | Solid color (Set by HSV)                   |
+| RGB_EFF_BREATHE  | Breathe a solid colour                     |
+| RGB_EFF_SPECTRUM | Cycle all LEDs through the colour spectrum |
+| RGB_EFF_SWIRL    | Swirl a rainbow around the LEDs            |
 
 If the `RGB_MEFS` key is held down for longer than [`CONFIG_ZMK_SETTINGS_SAVE_DEBOUNCE`](../config/system.md#general) milliseconds and the board is reset prior to releasing the key the temporary effect will have been saved to flash memory and will be restored after resetting/power cycling
 
