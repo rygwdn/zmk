@@ -48,7 +48,7 @@ The ZMK battery voltage divider includes the [Zephyr voltage divider](https://do
 
 :::note Charging indication
 
-The battery charging status is not currently consumed by any indicators and cannot be conveyed to the host over BLE. The battery charging status is updated every `CONFIG_ZMK_BATTERY_REPORT_INTERVAL`
+The battery charging status is not currently consumed by any indicators and cannot be conveyed to the host over BLE. The battery charging status is updated every `CONFIG_ZMK_BATTERY_REPORT_INTERVAL` seconds.
 
 :::
 
