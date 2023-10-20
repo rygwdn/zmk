@@ -32,13 +32,25 @@ Applies to: [`/chosen` node](https://docs.zephyrproject.org/latest/guides/dts/in
 
 ## Battery Voltage Divider Sensor
 
-Driver for reading the voltage of a battery using an ADC connected to a voltage divider.
+Driver for reading the voltage of a battery using an ADC connected to a voltage divider. This driver can also read a GPIO pin to detect whether the battery is charging or not if the hardware implementation includes a battery charging IC with an output to indicate charging status. This functionality is optional, the `chg-gpios` devicetree configuration does not have to be set.
 
 ### Devicetree
 
 Applies to: `compatible = "zmk,battery-voltage-divider"`
 
-See [Zephyr's voltage divider documentation](https://docs.zephyrproject.org/latest/build/dts/api/bindings/adc/voltage-divider.html).
+Definition file: [zmk/app/module/dts/bindings/sensor/zmk,battery-voltage-divider.yaml](https://github.com/zmkfirmware/zmk/blob/main/app/module/dts/bindings/sensor/zmk,battery-voltage-divider.yaml)
+
+The ZMK battery voltage divider includes the [Zephyr voltage divider](https://docs.zephyrproject.org/latest/build/dts/api/bindings/adc/voltage-divider.html) and adds on additional functionality.
+
+| Property    | Type       | Description                                      | Default |
+| ----------- | ---------- | ------------------------------------------------ | ------- |
+| `chg-gpios` | GPIO array | GPIO connected to the charging IC's charging pin |         |
+
+:::note Charging indication
+
+The battery charging status is not currently consumed by any indicators and cannot be conveyed to the host over BLE. The battery charging status is updated every `CONFIG_ZMK_BATTERY_REPORT_INTERVAL`
+
+:::
 
 ## nRF VDDH Battery Sensor
 
