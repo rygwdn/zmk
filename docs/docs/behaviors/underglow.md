@@ -74,7 +74,11 @@ When using the `RGB_EFS` or `RGB_MEFS` definitions you must also include a param
 | RGB_EFF_SPECTRUM | Cycle all LEDs through the color spectrum |
 | RGB_EFF_SWIRL    | Swirl a rainbow around the LEDs           |
 
-If the `RGB_MEFS` key is held down for longer than [`CONFIG_ZMK_SETTINGS_SAVE_DEBOUNCE`](../config/system.md#general) milliseconds and the board is reset prior to releasing the key the temporary effect will have been saved to flash memory and will be restored after resetting/power cycling
+:::
+
+:::warning
+
+If the `RGB_MEFS` key is held down for longer than [`CONFIG_ZMK_SETTINGS_SAVE_DEBOUNCE`](../config/system.md#general) milliseconds and the board is reset prior to releasing the key, the temporary effect will have been saved to flash memory and will be the one selected after resetting/power cycling.
 
 :::
 
