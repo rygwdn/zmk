@@ -78,11 +78,6 @@ static struct hids_report trackpad_hqa = {
     .type = HIDS_FEATURE,
 };
 
-static struct hids_report trackpad_config = {
-    .id = ZMK_REPORT_ID_FEATURE_PTP_CONFIGURATION,
-    .type = HIDS_FEATURE,
-};
-
 static struct hids_report trackpad_selective = {
     .id = ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE,
     .type = HIDS_FEATURE,
@@ -157,43 +152,48 @@ static ssize_t read_hids_trackpad_input_report(struct bt_conn *conn,
     return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
                              sizeof(struct zmk_hid_ptp_report_body));
 }
+
+static ssize_t write_hids_trackpad_selective_report(struct bt_conn *conn,
+                                                    const struct bt_gatt_attr *attr,
+                                                    const void *buf, uint16_t len, uint16_t offset,
+                                                    uint8_t flags) {
+    if (offset != 0) {
+        return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
+    }
+    if (len != sizeof(uint8_t)) {
+        return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
+    }
+
+    struct zmk_hid_ptp_feature_selective_report *report =
+        (struct zmk_hid_ptp_feature_selective_report *)buf;
+
+    LOG_DBG("Selective report set %d", report->selective_reporting);
+    zmk_hid_ptp_set_feature_selective_report(report->selective_reporting);
+
+    return len;
+}
+
+static ssize_t read_hids_trackpad_selective_report(struct bt_conn *conn,
+                                                   const struct bt_gatt_attr *attr, void *buf,
+                                                   uint16_t len, uint16_t offset) {
+    uint8_t *report_body = &zmk_hid_ptp_get_feature_selective_report()->selective_reporting;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, sizeof(uint8_t));
+}
+
+static ssize_t read_hids_trackpad_certification_report(struct bt_conn *conn,
+                                                       const struct bt_gatt_attr *attr, void *buf,
+                                                       uint16_t len, uint16_t offset) {
+    uint8_t *report_body = &zmk_hid_ptp_get_feature_certification_report()->ptphqa_blob;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 256);
+}
+
+static ssize_t read_hids_trackpad_capabilities_report(struct bt_conn *conn,
+                                                      const struct bt_gatt_attr *attr, void *buf,
+                                                      uint16_t len, uint16_t offset) {
+    uint16_t *report_body = &zmk_hid_ptp_get_feature_capabilities_report()->max_touches;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 2);
+}
 #endif
-// TODO
-/*
-static ssize_t read_hids_trackpad_capabilities_input_report(struct bt_conn *conn,
-                                                            const struct bt_gatt_attr *attr,
-                                                            void *buf, uint16_t len,
-                                                            uint16_t offset) {
-    struct zmk_hid_consumer_report_body *report_body = &zmk_hid_get_consumer_report()->body;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
-                             sizeof(struct zmk_hid_consumer_report_body));
-}
-
-static ssize_t read_hids_consumer_input_report(struct bt_conn *conn,
-                                               const struct bt_gatt_attr *attr, void *buf,
-                                               uint16_t len, uint16_t offset) {
-    struct zmk_hid_consumer_report_body *report_body = &zmk_hid_get_consumer_report()->body;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
-                             sizeof(struct zmk_hid_consumer_report_body));
-}
-
-static ssize_t read_hids_consumer_input_report(struct bt_conn *conn,
-                                               const struct bt_gatt_attr *attr, void *buf,
-                                               uint16_t len, uint16_t offset) {
-    struct zmk_hid_consumer_report_body *report_body = &zmk_hid_get_consumer_report()->body;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
-                             sizeof(struct zmk_hid_consumer_report_body));
-}
-
-static ssize_t read_hids_consumer_input_report(struct bt_conn *conn,
-                                               const struct bt_gatt_attr *attr, void *buf,
-                                               uint16_t len, uint16_t offset) {
-    struct zmk_hid_consumer_report_body *report_body = &zmk_hid_get_consumer_report()->body;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
-                             sizeof(struct zmk_hid_consumer_report_body));
-}
-*/
-// ENDTODO
 
 // static ssize_t write_proto_mode(struct bt_conn *conn,
 //                                 const struct bt_gatt_attr *attr,
@@ -255,27 +255,24 @@ BT_GATT_SERVICE_DEFINE(
     BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
                        NULL, &trackpad_report),
-#endif /*                                                                                          \
-BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,               \
-      BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),                     \
-BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),            \
-BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,       \
-  NULL, &consumer_input),                                                                          \
-BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,               \
-      BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),                     \
-BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),            \
-BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,       \
-  NULL, &consumer_input),                                                                          \
-BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,               \
-      BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),                     \
-BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),            \
-BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,       \
-  NULL, &consumer_input),                                                                          \
-BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,               \
-      BT_GATT_PERM_READ_ENCRYPT, read_hids_consumer_input_report, NULL, NULL),                     \
-BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),            \
-BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,       \
-  NULL, &consumer_input),*/
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ,
+                           BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT,
+                           read_hids_trackpad_capabilities_report, NULL, NULL),
+    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                       NULL, &trackpad_capabilities),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ,
+                           BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT,
+                           read_hids_trackpad_certification_report, NULL, NULL),
+    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                       NULL, &trackpad_hqa),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT,
+                           BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE | BT_GATT_CHRC_WRITE_WITHOUT_RESP,
+                           BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT,
+                           read_hids_trackpad_selective_report,
+                           write_hids_trackpad_selective_report, NULL),
+    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                       NULL, &trackpad_selective),
+#endif
     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_CTRL_POINT, BT_GATT_CHRC_WRITE_WITHOUT_RESP,
                            BT_GATT_PERM_WRITE, NULL, write_ctrl_point, &ctrl_point));
 
@@ -411,7 +408,7 @@ void send_ptp_report_callback(struct k_work *work) {
         }
 
         struct bt_gatt_notify_params notify_params = {
-            .attr = &hog_svc.attrs[13],
+            .attr = &hog_svc.attrs[15],
             .data = &report,
             .len = sizeof(report),
         };
@@ -453,7 +450,7 @@ int zmk_hog_send_ptp_report_direct(struct zmk_hid_ptp_report_body *report) {
     }
 
     struct bt_gatt_notify_params notify_params = {
-        .attr = &hog_svc.attrs[13],
+        .attr = &hog_svc.attrs[15],
         .data = report,
         .len = sizeof(*report),
     };
