@@ -408,7 +408,7 @@ void send_ptp_report_callback(struct k_work *work) {
         }
 
         struct bt_gatt_notify_params notify_params = {
-            .attr = &hog_svc.attrs[15],
+            .attr = &hog_svc.attrs[16],
             .data = &report,
             .len = sizeof(report),
         };
@@ -450,7 +450,7 @@ int zmk_hog_send_ptp_report_direct(struct zmk_hid_ptp_report_body *report) {
     }
 
     struct bt_gatt_notify_params notify_params = {
-        .attr = &hog_svc.attrs[15],
+        .attr = &hog_svc.attrs[16],
         .data = report,
         .len = sizeof(*report),
     };
