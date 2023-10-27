@@ -176,22 +176,28 @@ static ssize_t write_hids_trackpad_selective_report(struct bt_conn *conn,
 static ssize_t read_hids_trackpad_selective_report(struct bt_conn *conn,
                                                    const struct bt_gatt_attr *attr, void *buf,
                                                    uint16_t len, uint16_t offset) {
-    uint8_t *report_body = &zmk_hid_ptp_get_feature_selective_report()->selective_reporting;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, sizeof(uint8_t));
+    struct zmk_hid_ptp_feature_selective_report *report_body =
+        zmk_hid_ptp_get_feature_selective_report();
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+                             sizeof(struct zmk_hid_ptp_feature_selective_report));
 }
 
 static ssize_t read_hids_trackpad_certification_report(struct bt_conn *conn,
                                                        const struct bt_gatt_attr *attr, void *buf,
                                                        uint16_t len, uint16_t offset) {
-    uint8_t *report_body = &zmk_hid_ptp_get_feature_certification_report()->ptphqa_blob;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 256);
+    struct zmk_hid_ptp_feature_certification_report *report_body =
+        zmk_hid_ptp_get_feature_certification_report();
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+                             sizeof(struct zmk_hid_ptp_feature_certification_report));
 }
 
 static ssize_t read_hids_trackpad_capabilities_report(struct bt_conn *conn,
                                                       const struct bt_gatt_attr *attr, void *buf,
                                                       uint16_t len, uint16_t offset) {
-    uint16_t *report_body = &zmk_hid_ptp_get_feature_capabilities_report()->max_touches;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 2);
+    struct zmk_hid_ptp_feature_capabilities_report *report_body =
+        zmk_hid_ptp_get_feature_capabilities_report();
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+                             sizeof(struct zmk_hid_ptp_feature_capabilities_report));
 }
 #endif
 
