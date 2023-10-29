@@ -185,9 +185,8 @@ static ssize_t read_hids_trackpad_selective_report(struct bt_conn *conn,
 static ssize_t read_hids_trackpad_certification_report(struct bt_conn *conn,
                                                        const struct bt_gatt_attr *attr, void *buf,
                                                        uint16_t len, uint16_t offset) {
-    struct zmk_hid_ptp_feature_certification_report *report_body =
-        zmk_hid_ptp_get_feature_certification_report();
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+    uint8_t *data = (uint8_t *)zmk_hid_ptp_get_feature_selective_report();
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, data,
                              sizeof(struct zmk_hid_ptp_feature_certification_report));
 }
 
