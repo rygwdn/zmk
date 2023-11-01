@@ -605,18 +605,6 @@ static int zmk_rgb_underglow_init(const struct device *_arg) {
     }
 #endif
 
-    state = (struct rgb_underglow_state){
-        color : {
-            h : CONFIG_ZMK_RGB_UNDERGLOW_HUE_START,
-            s : CONFIG_ZMK_RGB_UNDERGLOW_SAT_START,
-            b : CONFIG_ZMK_RGB_UNDERGLOW_BRT_START,
-        },
-        animation_speed : CONFIG_ZMK_RGB_UNDERGLOW_SPD_START,
-        current_effect : CONFIG_ZMK_RGB_UNDERGLOW_EFF_START,
-        animation_step : 0,
-        on : IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_ON_START)
-    };
-
 #if IS_ENABLED(CONFIG_SETTINGS)
     settings_subsys_init();
 
@@ -630,6 +618,18 @@ static int zmk_rgb_underglow_init(const struct device *_arg) {
 
     settings_load_subtree("rgb/underglow");
 #endif
+
+    state = (struct rgb_underglow_state){
+        color : {
+            h : CONFIG_ZMK_RGB_UNDERGLOW_HUE_START,
+            s : CONFIG_ZMK_RGB_UNDERGLOW_SAT_START,
+            b : CONFIG_ZMK_RGB_UNDERGLOW_BRT_START,
+        },
+        animation_speed : CONFIG_ZMK_RGB_UNDERGLOW_SPD_START,
+        current_effect : CONFIG_ZMK_RGB_UNDERGLOW_EFF_START,
+        animation_step : 0,
+        on : IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_ON_START)
+    };
 
 #if ZMK_BLE_IS_CENTRAL
     k_work_init_delayable(&led_update_work, zmk_rgb_underglow_central_send);
