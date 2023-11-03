@@ -5,6 +5,8 @@
 #include <zmk/trackpad.h>
 #include <zmk/hid.h>
 #include <zmk/endpoints.h>
+#include <zmk/event_manager.h>
+#include <zmk/events/sensor_event.h>
 #include "drivers/sensor/gen4.h"
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -60,6 +62,13 @@ static void handle_trackpad(const struct device *dev, const struct sensor_trigge
     fingers[id.val1].x = x.val1;
     fingers[id.val1].y = y.val1;
     contacts_to_send |= BIT(id.val1);
+
+    ZMK_EVENT_RAISE(new_zmk_sensor_event(
+        (struct zmk_sensor_event){.sensor_index = 0,
+                                  .channel_data_size = 1,
+                                  .channel_data = {(struct zmk_sensor_channel_data){
+                                      .value = btns, .channel = SENSOR_CHAN_BUTTONS}},
+                                  .timestamp = k_uptime_get()}));
 }
 
 static void zmk_trackpad_tick(struct k_work *work) {
