@@ -24,8 +24,8 @@ static int gen4_i2c_init(const struct device *dev) {
         return ret;
     }
     LOG_DBG("received value %x", buffer[2]);
-    // enable absolute mode
-    uint8_t request2[10] = {0x05, 0x00, 0x34, 0x03, 0x06, 0x00, 0x04, 0x00, 0x04, 0x03};
+    // enable mouse mode
+    uint8_t request2[10] = {0x05, 0x00, 0x34, 0x03, 0x06, 0x00, 0x04, 0x00, 0x04, 0x00};
     ret = i2c_write_dt(&cfg->bus, request2, 10);
     if (ret < 0) {
         LOG_ERR("ext read status: %d", ret);
@@ -38,26 +38,17 @@ static int gen4_channel_get(const struct device *dev, enum sensor_channel chan,
                             struct sensor_value *val) {
     const struct gen4_data *data = dev->data;
     switch ((enum sensor_channel_gen4)chan) {
-    case SENSOR_CHAN_CONTACTS:
-        val->val1 = data->contacts;
-        break;
-    case SENSOR_CHAN_X:
-        val->val1 = data->finger.x;
-        break;
-    case SENSOR_CHAN_Y:
-        val->val1 = data->finger.y;
-        break;
-    case SENSOR_CHAN_CONFIDENCE_TIP:
-        val->val1 = data->finger.confidence_tip;
-        break;
-    case SENSOR_CHAN_FINGER:
-        val->val1 = data->finger_id;
-        break;
-    case SENSOR_CHAN_SCAN_TIME:
-        val->val1 = data->scan_time;
-        break;
     case SENSOR_CHAN_BUTTONS:
         val->val1 = data->btns;
+        break;
+    case SENSOR_CHAN_XDELTA:
+        val->val1 = data->mouse.xDelta;
+        break;
+    case SENSOR_CHAN_YDELTA:
+        val->val1 = data->mouse.yDelta;
+        break;
+    case SENSOR_CHAN_WHEEL:
+        val->val1 = data->mouse.scrollDelta;
         break;
     default:
         return -ENOTSUP;
@@ -75,34 +66,19 @@ static int gen4_sample_fetch(const struct device *dev, enum sensor_channel) {
         if (ret != 0)
             return ret;
     }
-    if (!(packet[REPORT_ID_SHIFT] == PTP_REPORT_ID)) {
+    if (!(packet[REPORT_ID_SHIFT] == MOUSE_REPORT_ID)) {
         return -EAGAIN;
     }
 
-    uint16_t report_length = packet[LENGTH_LOWBYTE_SHIFT] | (packet[LENGTH_HIGHBYTE_SHIFT] << 8);
-
     struct gen4_data *data = dev->data;
-
-    if (report_length == 12) {
-        data->scan_time = (uint16_t)packet[8] | (uint16_t)(packet[9] << 8);
-        data->contacts = packet[10];
-        data->btns = packet[11];
-    } else {
-        data->scan_time = (uint16_t)packet[9] | (uint16_t)(packet[10] << 8);
-        data->contacts = packet[11];
-        data->btns = packet[12];
-    }
-
-    data->finger_id = (packet[3] & 0xFC) >> 2;
-    // LOG_DBG("FINGER ID: %d", data->finger_id);
-    //   Finger data
-    data->finger.confidence_tip = (packet[3] & 0x03);
-    data->finger.x = (uint16_t)packet[4] | (uint16_t)(packet[5] << 8);
-    data->finger.y = (uint16_t)packet[6] | (uint16_t)(packet[7] << 8);
-
-    // LOG_DBG("Finger palm/detected: %d", data->finger.confidence_tip);
-    // LOG_DBG("Finger x: %d", data->finger.x);
-    // LOG_DBG("Finger y: %d", data->finger.y);
+    LOG_DBG("btns:%d", packet[3]);
+    LOG_DBG("x:%d", packet[4]);
+    LOG_DBG("y:%d", packet[5]);
+    LOG_DBG("scr:%d", packet[6]);
+    data->btns = packet[3];
+    data->mouse.xDelta = packet[4];
+    data->mouse.yDelta = packet[5];
+    data->mouse.scrollDelta = packet[6];
 
     return 0;
 }
@@ -211,7 +187,6 @@ static const struct sensor_driver_api gen4_driver_api = {
     static struct gen4_data gen4_data_##n;                                                         \
     static const struct gen4_config gen4_config_##n = {                                            \
         .bus = I2C_DT_SPEC_INST_GET(n),                                                            \
-        .rotate_90 = DT_INST_PROP(0, rotate_90),                                                   \
         COND_CODE_1(CONFIG_GEN4_TRIGGER, (.dr = GPIO_DT_SPEC_GET(DT_DRV_INST(0), dr_gpios), ),     \
                     ())};                                                                          \
     DEVICE_DT_INST_DEFINE(n, gen4_init, NULL, &gen4_data_##n, &gen4_config_##n, POST_KERNEL,       \

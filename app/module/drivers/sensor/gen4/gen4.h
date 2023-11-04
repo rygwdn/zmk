@@ -10,18 +10,19 @@
 #define REPORT_ID_SHIFT 2
 
 #define PTP_REPORT_ID (0x01)
+#define MOUSE_REPORT_ID 0x06
 
 #define GEN4_ADDRESS 0x2C
 
-struct gen4_finger_data {
-    uint8_t confidence_tip;
-    uint16_t x, y;
+struct gen4_mouse_data {
+    int8_t xDelta;
+    int8_t yDelta;      /**< Change in vertical movement */
+    int8_t scrollDelta; /**< Vertical Scroll value */
 };
 
 struct gen4_data {
-    uint8_t contacts, btns, finger_id;
-    uint16_t scan_time;
-    struct gen4_finger_data finger;
+    uint8_t btns;
+    struct gen4_mouse_data mouse;
     bool in_int;
 #ifdef CONFIG_GEN4_TRIGGER
     const struct device *dev;
@@ -42,7 +43,6 @@ struct gen4_config {
 #if DT_INST_ON_BUS(0, i2c)
     const struct i2c_dt_spec bus;
 #endif
-    bool rotate_90;
 #ifdef CONFIG_GEN4_TRIGGER
     const struct gpio_dt_spec dr;
 #endif

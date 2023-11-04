@@ -8,12 +8,11 @@
 
 #include <zephyr/kernel.h>
 
-typedef uint8_t zmk_trackpad_finger_contacts_t;
-
-struct zmk_trackpad_finger_data_t {
-    bool present;
-    bool palm;
-    uint16_t x, y;
+struct zmk_trackpad_mouse_data_t {
+    uint8_t buttons;
+    int8_t xDelta;
+    int8_t yDelta;
+    int8_t scrollDelta;
 };
 
 struct k_work_q *zmk_trackpad_work_q();

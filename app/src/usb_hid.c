@@ -41,19 +41,6 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
         return -ENOTSUP;
     }
     switch (setup->wValue & HID_GET_REPORT_ID_MASK) {
-#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-    case ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE:
-        if (*len != sizeof(struct zmk_hid_ptp_feature_selective_report)) {
-            LOG_ERR("LED set report is malformed: length=%d", *len);
-            return -EINVAL;
-        } else {
-            struct zmk_hid_ptp_feature_selective_report *report =
-                (struct zmk_hid_ptp_feature_selective_report *)*data;
-            LOG_DBG("Selective report set %d", report->selective_reporting);
-            zmk_hid_ptp_set_feature_selective_report(report->selective_reporting);
-        }
-        break;
-#endif
     case ZMK_REPORT_ID_LEDS:
         if (*len != sizeof(struct zmk_hid_led_report)) {
             LOG_ERR("LED set report is malformed: length=%d", *len);
@@ -73,51 +60,10 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
 
     return 0;
 }
-#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-static int get_report_cb(const struct device *dev, struct usb_setup_packet *setup, int32_t *len,
-                         uint8_t **data) {
-    if ((setup->wValue & HID_GET_REPORT_TYPE_MASK) != HID_REPORT_TYPE_FEATURE) {
-        LOG_ERR("Unsupported report type %d requested",
-                (setup->wValue & HID_GET_REPORT_TYPE_MASK) >> 8);
-        return -ENOTSUP;
-    }
-
-    switch (setup->wValue & HID_GET_REPORT_ID_MASK) {
-    case ZMK_REPORT_ID_FEATURE_PTP_SELECTIVE:
-
-        *data = (uint8_t *)zmk_hid_ptp_get_feature_selective_report();
-        LOG_DBG("Selective report get %d", 0);
-        *len = sizeof(struct zmk_hid_ptp_feature_selective_report);
-        break;
-    case ZMK_REPORT_ID_FEATURE_PTPHQA:
-
-        *data = (uint8_t *)zmk_hid_ptp_get_feature_certification_report();
-        LOG_DBG("certification report get %d", 0);
-        *len = sizeof(struct zmk_hid_ptp_feature_certification_report);
-
-        break;
-    case ZMK_REPORT_ID_FEATURE_PTP_CAPABILITIES:
-
-        *data = (uint8_t *)zmk_hid_ptp_get_feature_capabilities_report();
-        LOG_DBG("capabilities report get %d", 0);
-        *len = sizeof(struct zmk_hid_ptp_feature_capabilities_report);
-
-        break;
-    default:
-        LOG_ERR("Invalid report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);
-        return -EINVAL;
-    }
-
-    return 0;
-}
-#endif
 
 static const struct hid_ops ops = {
     .int_in_ready = in_ready_cb,
     .set_report = set_report_cb,
-#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-    .get_report = get_report_cb,
-#endif
 };
 
 int zmk_usb_hid_send_report(const uint8_t *report, size_t len) {

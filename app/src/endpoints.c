@@ -116,9 +116,7 @@ int zmk_endpoints_toggle_transport(void) {
     return zmk_endpoints_select_transport(new_transport);
 }
 
-struct zmk_endpoint_instance zmk_endpoints_selected(void) {
-    return current_instance;
-}
+struct zmk_endpoint_instance zmk_endpoints_selected(void) { return current_instance; }
 
 static int send_keyboard_report(void) {
     struct zmk_hid_keyboard_report *keyboard_report = zmk_hid_get_keyboard_report();
@@ -194,16 +192,16 @@ int zmk_endpoints_send_report(uint16_t usage_page) {
 }
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-int zmk_endpoints_send_ptp_report() {
+int zmk_endpoints_send_trackpad_mouse_report() {
 
     // LOG_DBG("Trying to sent report %d", 0);
 
-    struct zmk_hid_ptp_report *ptp_report = zmk_hid_get_ptp_report();
+    struct zmk_hid_touchpad_mouse_report *touchpad_report = zmk_hid_get_touchpad_mouse_report();
 
     switch (current_instance.transport) {
 #if IS_ENABLED(CONFIG_ZMK_USB)
     case ZMK_TRANSPORT_USB: {
-        int err = zmk_usb_hid_send_report((uint8_t *)ptp_report, sizeof(*ptp_report));
+        int err = zmk_usb_hid_send_report((uint8_t *)touchpad_report, sizeof(*touchpad_report));
         if (err) {
             LOG_ERR("FAILED TO SEND OVER USB: %d", err);
         }
@@ -214,9 +212,9 @@ int zmk_endpoints_send_ptp_report() {
 #if IS_ENABLED(CONFIG_ZMK_BLE)
     case ZMK_TRANSPORT_BLE: {
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
-        int err = zmk_hog_send_ptp_report_direct(&ptp_report->body);
+        int err = zmk_hog_send_touchpad_mouse_report_direct(&touchpad_report->body);
 #else
-        int err = zmk_hog_send_ptp_report(&ptp_report->body);
+        int err = zmk_hog_send_touchpad_mouse_report(&touchpad_report->body);
 #endif
         if (err) {
             LOG_ERR("FAILED TO SEND OVER HOG: %d", err);
