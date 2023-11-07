@@ -65,6 +65,14 @@ config ZMK_HID_KEYBOARD_REPORT_SIZE
 
 endif
 
+if ZMK_HID_REPORT_TYPE_NKRO
+
+config ZMK_HID_KEYBOARD_EXTENDED_REPORT
+    bool "Enable extended NKRO report"
+    default n
+
+endif
+
 config ZMK_HID_CONSUMER_REPORT_SIZE
     int "# Consumer Keys Reportable"
     default 6
