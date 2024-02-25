@@ -7,6 +7,7 @@
 #define DT_DRV_COMPAT zmk_behavior_tri_state
 
 #include <zephyr/device.h>
+#include <zephyr/drivers/kscan.h>
 #include <drivers/behavior.h>
 #include <zephyr/logging/log.h>
 #include <zmk/behavior.h>
@@ -19,6 +20,8 @@
 #include <zmk/hid.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+
+#if DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT)
 
 #define ZMK_BHV_MAX_ACTIVE_TRI_STATES 10
 
@@ -70,7 +73,8 @@ void trigger_end_behavior(struct active_tri_state *si) {
 }
 
 void behavior_tri_state_timer_handler(struct k_work *item) {
-    struct active_tri_state *tri_state = CONTAINER_OF(item, struct active_tri_state, release_timer);
+    struct k_work_delayable *ditem = k_work_delayable_from_work(item);
+    struct active_tri_state *tri_state = CONTAINER_OF(ditem, struct active_tri_state, release_timer);
     if (!tri_state->is_active || tri_state->timer_cancelled || tri_state->is_pressed) {
         return;
     }
@@ -274,7 +278,7 @@ static int tri_state_layer_state_changed_listener(const zmk_event_t *eh) {
 
 #define _TRANSFORM_ENTRY(idx, node)                                                                \
     {                                                                                              \
-        .behavior_dev = DT_LABEL(DT_INST_PHANDLE_BY_IDX(node, bindings, idx)),                     \
+        .behavior_dev = DEVICE_DT_NAME(DT_INST_PHANDLE_BY_IDX(node, bindings, idx)),                     \
         .param1 = COND_CODE_0(DT_INST_PHA_HAS_CELL_AT_IDX(node, bindings, idx, param1), (0),       \
                               (DT_INST_PHA_BY_IDX(node, bindings, idx, param1))),                  \
         .param2 = COND_CODE_0(DT_INST_PHA_HAS_CELL_AT_IDX(node, bindings, idx, param2), (0),       \
@@ -294,8 +298,10 @@ static int tri_state_layer_state_changed_listener(const zmk_event_t *eh) {
         .start_behavior = _TRANSFORM_ENTRY(0, n),                                                  \
         .continue_behavior = _TRANSFORM_ENTRY(1, n),                                               \
         .end_behavior = _TRANSFORM_ENTRY(2, n)};                                                   \
-    DEVICE_DT_INST_DEFINE(n, behavior_tri_state_init, NULL, NULL, &behavior_tri_state_config_##n,  \
+    BEHAVIOR_DT_INST_DEFINE(n, behavior_tri_state_init, NULL, NULL, &behavior_tri_state_config_##n,  \
                           APPLICATION, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,                        \
                           &behavior_tri_state_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(TRI_STATE_INST)
+
+#endif
