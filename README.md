@@ -1,5 +1,12 @@
 # Zephyr™ Mechanical Keyboard (ZMK) Firmware
 
+Based on [ReFil/zmk:adv360-z3.2-3](https://github.com/ReFil/zmk/tree/adv360-z3.2-3) with
+- https://github.com/zmkfirmware/zmk/pull/1366
+
+Diff:
+- https://github.com/rygwdn/zmk/compare/adv360-z3.2-3-rygwdn...ReFil:zmk:adv360-z3.2-3
+- https://github.com/ReFil/zmk/compare/adv360-z3.2-3...rygwdn:zmk:adv360-z3.2-3-rygwdn
+
 [![Discord](https://img.shields.io/discord/719497620560543766)](https://zmk.dev/community/discord/invite)
 [![Build](https://github.com/zmkfirmware/zmk/workflows/Build/badge.svg)](https://github.com/zmkfirmware/zmk/actions)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
