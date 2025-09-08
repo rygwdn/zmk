@@ -1,0 +1,34 @@
+/*
+ * Copyright (c) 2024 The ZMK Contributors
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+#include "../behavior_keymap.dtsi"
+
+&kscan {
+    events = <
+        /* Tap BACKSPACE (position 2, in idle-ignore-key-positions) */
+        ZMK_MOCK_PRESS(1,0,10)
+        ZMK_MOCK_RELEASE(1,0,10)
+
+        /* Quickly tap hold-tap key after BACKSPACE (within require-prior-idle time) */
+        /* Should produce HOLD behavior (SHIFT) because BACKSPACE doesn't update timestamp */
+        ZMK_MOCK_PRESS(0,0,50)
+        ZMK_MOCK_PRESS(0,1,10)  /* Press B to trigger hold */
+        ZMK_MOCK_RELEASE(0,1,10)
+        ZMK_MOCK_RELEASE(0,0,10)
+
+        /* Wait for idle time to pass */
+        ZMK_MOCK_PRESS(1,1,300)  /* Press C (position 3, NOT in idle-ignore-key-positions) */
+        ZMK_MOCK_RELEASE(1,1,10)
+
+        /* Quickly tap hold-tap key after C (within require-prior-idle time) */
+        /* Should produce TAP behavior (A) because C updates the timestamp */
+        ZMK_MOCK_PRESS(0,0,50)
+        ZMK_MOCK_RELEASE(0,0,10)
+    >;
+};

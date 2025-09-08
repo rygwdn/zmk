@@ -1,0 +1,34 @@
+/*
+ * Copyright (c) 2024 The ZMK Contributors
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+
+/ {
+    behaviors {
+        ht_ignore_pos: behavior_hold_tap_ignore_positions {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <300>;
+            quick-tap-ms = <300>;
+            require-prior-idle-ms = <100>;
+            idle-ignore-key-positions = <2>;  // Position 2 is the backspace key in our layout
+            bindings = <&kp>, <&kp>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            bindings = <
+                &ht_ignore_pos LEFT_SHIFT A &kp B
+                &kp BACKSPACE &kp C>;  // BACKSPACE is at position 2 (row 1, col 0)
+        };
+    };
+};

@@ -64,7 +64,9 @@ struct behavior_hold_tap_config {
     bool retro_tap;
     bool hold_trigger_on_release;
     int32_t hold_trigger_key_positions_len;
-    int32_t hold_trigger_key_positions[];
+    int32_t *hold_trigger_key_positions;
+    int32_t idle_ignore_key_positions_len;
+    int32_t *idle_ignore_key_positions;
 };
 
 struct behavior_hold_tap_data {
@@ -89,6 +91,8 @@ struct active_hold_tap {
 
     // initialized to -1, which is to be interpreted as "no other key has been pressed yet"
     int32_t position_of_first_other_key_pressed;
+    // timestamp of last non-ignored key (only used with idle-ignore-key-positions)
+    int64_t last_non_ignored_key_timestamp;
 };
 
 // The undecided hold tap is the hold tap that needs to be decided before
@@ -141,8 +145,35 @@ static void store_last_hold_tapped(struct active_hold_tap *hold_tap) {
     last_tapped.timestamp = hold_tap->timestamp;
 }
 
+static bool is_idle_ignore_key_position(const struct behavior_hold_tap_config *config, int32_t position) {
+    for (int i = 0; i < config->idle_ignore_key_positions_len; i++) {
+        if (config->idle_ignore_key_positions[i] == position) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void update_hold_tap_last_non_ignored_timestamp(struct active_hold_tap *hold_tap,
+                                                        int64_t timestamp,
+                                                        int32_t position) {
+    if (hold_tap->position == ZMK_BHV_HOLD_TAP_POSITION_NOT_USED ||
+        hold_tap->config->idle_ignore_key_positions_len == 0) {
+        return;
+    }
+
+    if (!is_idle_ignore_key_position(hold_tap->config, position)) {
+        hold_tap->last_non_ignored_key_timestamp = timestamp;
+    }
+}
+
 static bool is_quick_tap(struct active_hold_tap *hold_tap) {
-    if ((last_tapped.timestamp + hold_tap->config->require_prior_idle_ms) > hold_tap->timestamp) {
+    if (hold_tap->config->idle_ignore_key_positions_len > 0) {
+        if ((hold_tap->last_non_ignored_key_timestamp + hold_tap->config->require_prior_idle_ms) >
+            hold_tap->timestamp) {
+            return true;
+        }
+    } else if ((last_tapped.timestamp + hold_tap->config->require_prior_idle_ms) > hold_tap->timestamp) {
         return true;
     } else {
         return (last_tapped.position == hold_tap->position) &&
@@ -269,6 +300,7 @@ static struct active_hold_tap *store_hold_tap(struct zmk_behavior_binding_event 
         active_hold_taps[i].param_tap = param_tap;
         active_hold_taps[i].timestamp = event->timestamp;
         active_hold_taps[i].position_of_first_other_key_pressed = -1;
+        active_hold_taps[i].last_non_ignored_key_timestamp = INT32_MIN;  // Initialize to old timestamp
         return &active_hold_taps[i];
     }
     return NULL;
@@ -727,6 +759,14 @@ static const struct behavior_driver_api behavior_hold_tap_driver_api = {
 static int position_state_changed_listener(const zmk_event_t *eh) {
     struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
 
+    if (ev->state) {
+        for (int i = 0; i < ZMK_BHV_HOLD_TAP_MAX_HELD; i++) {
+            update_hold_tap_last_non_ignored_timestamp(&active_hold_taps[i],
+                                                        ev->timestamp,
+                                                        ev->position);
+        }
+    }
+
     update_hold_status_for_retro_tap(ev->position);
 
     if (undecided_hold_tap == NULL) {
@@ -873,6 +913,8 @@ static int behavior_hold_tap_init(const struct device *dev) {
         .hold_trigger_on_release = DT_INST_PROP(n, hold_trigger_on_release),                       \
         .hold_trigger_key_positions = DT_INST_PROP(n, hold_trigger_key_positions),                 \
         .hold_trigger_key_positions_len = DT_INST_PROP_LEN(n, hold_trigger_key_positions),         \
+        .idle_ignore_key_positions = DT_INST_PROP(n, idle_ignore_key_positions),                   \
+        .idle_ignore_key_positions_len = DT_INST_PROP_LEN(n, idle_ignore_key_positions),           \
     };                                                                                             \
     static struct behavior_hold_tap_data behavior_hold_tap_data_##n = {};                          \
     BEHAVIOR_DT_INST_DEFINE(n, behavior_hold_tap_init, NULL, &behavior_hold_tap_data_##n,          \

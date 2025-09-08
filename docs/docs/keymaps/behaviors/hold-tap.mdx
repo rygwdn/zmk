@@ -362,6 +362,36 @@ However, if the hold behavior isn't used during fast typing, then it can be an e
 
   </details>
 
+### `idle-ignore-key-positions`
+
+The `idle-ignore-key-positions` property allows you to specify an array of key position indices that should not reset the idle timer for `require-prior-idle-ms`. This is useful when certain key positions (like where backspace or delete are located) are frequently pressed in quick succession before a hold-tap key, and you don't want them to trigger the hold behavior.
+
+**Important:** When `idle-ignore-key-positions` is configured, ALL key positions (including modifiers) will reset the idle timer unless explicitly listed in the ignore list. This differs from the default `require-prior-idle-ms` behavior, which only tracks non-modifier keys.
+
+  <details>
+    <summary>Example configuration with `idle-ignore-key-positions` for home-row mods:</summary>
+
+```dts
+hrm: home_row_mods {
+    compatible = "zmk,behavior-hold-tap";
+    #binding-cells = <2>;
+    flavor = "balanced";
+    tapping-term-ms = <280>;
+    quick-tap-ms = <175>;
+    require-prior-idle-ms = <150>;
+    idle-ignore-key-positions = <31 32>;  // Positions where backspace and delete are located
+    bindings = <&kp>, <&kp>;
+};
+```
+
+With this configuration, if you press keys at positions 31 or 32 (e.g., backspace and delete) multiple times and then quickly press a home-row mod key, it will still produce a tap (not a hold) even though you pressed it within the `require-prior-idle-ms` window. This prevents accidental modifier activation when deleting text and then quickly typing.
+
+Similar to `hold-trigger-key-positions`, this uses zero-based key position indices that correspond to your keyboard layout.
+
+**Note:** Once you add `idle-ignore-key-positions`, modifier keys will also reset the idle timer (unless they are in the ignore list). If you want to preserve the default behavior of ignoring modifiers, you'll need to add their positions to the `idle-ignore-key-positions` array.
+
+  </details>
+
 ### Positional hold-tap and `hold-trigger-key-positions`
 
 Including `hold-trigger-key-positions` in your hold-tap definition turns on the positional hold-tap feature. With positional hold-tap enabled, if you press any key **not** listed in `hold-trigger-key-positions` before `tapping-term-ms` expires, it will produce a tap.
