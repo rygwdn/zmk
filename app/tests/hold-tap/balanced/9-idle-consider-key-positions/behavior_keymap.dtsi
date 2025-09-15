@@ -10,14 +10,14 @@
 
 / {
     behaviors {
-        ht_ignore_pos: behavior_hold_tap_ignore_positions {
+        ht_consider_pos: behavior_hold_tap_consider_positions {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
             tapping-term-ms = <300>;
             quick-tap-ms = <300>;
             require-prior-idle-ms = <100>;
-            idle-ignore-key-positions = <2>;  // Position 2 is the backspace key in our layout
+            idle-consider-key-positions = <0 1 3>;  // All positions except position 2 (backspace)
             bindings = <&kp>, <&kp>;
         };
     };
@@ -27,7 +27,7 @@
 
         default_layer {
             bindings = <
-                &ht_ignore_pos LEFT_SHIFT A &kp B
+                &ht_consider_pos LEFT_SHIFT A &kp B
                 &kp BACKSPACE &kp C>;  // BACKSPACE is at position 2 (row 1, col 0)
         };
     };

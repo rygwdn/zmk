@@ -49,7 +49,7 @@ properties:
     default: []
   hold-trigger-on-release:
     type: boolean
-  idle-ignore-key-positions:
+  idle-consider-key-positions:
     type: array
     required: false
     default: []

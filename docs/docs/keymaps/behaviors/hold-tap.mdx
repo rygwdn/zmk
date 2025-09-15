@@ -362,14 +362,14 @@ However, if the hold behavior isn't used during fast typing, then it can be an e
 
   </details>
 
-### `idle-ignore-key-positions`
+### `idle-consider-key-positions`
 
-The `idle-ignore-key-positions` property allows you to specify an array of key position indices that should not reset the idle timer for `require-prior-idle-ms`. This is useful when certain key positions (like where backspace or delete are located) are frequently pressed in quick succession before a hold-tap key, and you don't want them to trigger the hold behavior.
+The `idle-consider-key-positions` property allows you to specify an array of key position indices that should reset the idle timer for `require-prior-idle-ms`. This is useful when you want to limit which keys reset the idle timer, ensuring that only specific key positions will trigger the hold behavior when pressed before a hold-tap key.
 
-**Important:** When `idle-ignore-key-positions` is configured, ALL key positions (including modifiers) will reset the idle timer unless explicitly listed in the ignore list. This differs from the default `require-prior-idle-ms` behavior, which only tracks non-modifier keys.
+**Important:** When `idle-consider-key-positions` is configured, ONLY key positions listed in the array will reset the idle timer. Keys not in the list (including modifiers unless explicitly added) will not affect the idle timer. This differs from the default `require-prior-idle-ms` behavior, which tracks all non-modifier keys.
 
   <details>
-    <summary>Example configuration with `idle-ignore-key-positions` for home-row mods:</summary>
+    <summary>Example configuration with `idle-consider-key-positions` for home-row mods:</summary>
 
 ```dts
 hrm: home_row_mods {
@@ -379,16 +379,16 @@ hrm: home_row_mods {
     tapping-term-ms = <280>;
     quick-tap-ms = <175>;
     require-prior-idle-ms = <150>;
-    idle-ignore-key-positions = <31 32>;  // Positions where backspace and delete are located
+    idle-consider-key-positions = <0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30>;  // All positions except backspace (31) and delete (32)
     bindings = <&kp>, <&kp>;
 };
 ```
 
-With this configuration, if you press keys at positions 31 or 32 (e.g., backspace and delete) multiple times and then quickly press a home-row mod key, it will still produce a tap (not a hold) even though you pressed it within the `require-prior-idle-ms` window. This prevents accidental modifier activation when deleting text and then quickly typing.
+With this configuration, only keys at the listed positions will reset the idle timer. Keys at positions 31 and 32 (e.g., backspace and delete) will NOT reset the timer, so pressing them multiple times and then quickly pressing a home-row mod key will still produce a tap (not a hold). This prevents accidental modifier activation when deleting text and then quickly typing.
 
 Similar to `hold-trigger-key-positions`, this uses zero-based key position indices that correspond to your keyboard layout.
 
-**Note:** Once you add `idle-ignore-key-positions`, modifier keys will also reset the idle timer (unless they are in the ignore list). If you want to preserve the default behavior of ignoring modifiers, you'll need to add their positions to the `idle-ignore-key-positions` array.
+**Note:** Once you add `idle-consider-key-positions`, only the listed positions will reset the idle timer. If you want modifier keys to also reset the timer, you'll need to add their positions to the `idle-consider-key-positions` array.
 
   </details>
 
