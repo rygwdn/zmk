@@ -898,6 +898,14 @@ static int behavior_hold_tap_init(const struct device *dev) {
 }
 
 #define KP_INST(n)                                                                                 \
+    COND_CODE_1(DT_INST_NODE_HAS_PROP(n, hold_trigger_key_positions),                             \
+                (static const int32_t hold_trigger_key_positions_##n[] =                          \
+                     DT_INST_PROP(n, hold_trigger_key_positions);),                               \
+                ())                                                                                \
+    COND_CODE_1(DT_INST_NODE_HAS_PROP(n, idle_ignore_key_positions),                              \
+                (static const int32_t idle_ignore_key_positions_##n[] =                           \
+                     DT_INST_PROP(n, idle_ignore_key_positions);),                                \
+                ())                                                                                \
     static const struct behavior_hold_tap_config behavior_hold_tap_config_##n = {                  \
         .tapping_term_ms = DT_INST_PROP(n, tapping_term_ms),                                       \
         .hold_behavior_dev = DEVICE_DT_NAME(DT_INST_PHANDLE_BY_IDX(n, bindings, 0)),               \
@@ -911,9 +919,13 @@ static int behavior_hold_tap_init(const struct device *dev) {
         .hold_while_undecided_linger = DT_INST_PROP(n, hold_while_undecided_linger),               \
         .retro_tap = DT_INST_PROP(n, retro_tap),                                                   \
         .hold_trigger_on_release = DT_INST_PROP(n, hold_trigger_on_release),                       \
-        .hold_trigger_key_positions = DT_INST_PROP(n, hold_trigger_key_positions),                 \
+        .hold_trigger_key_positions =                                                              \
+            COND_CODE_1(DT_INST_NODE_HAS_PROP(n, hold_trigger_key_positions),                      \
+                        (hold_trigger_key_positions_##n), (NULL)),                                 \
         .hold_trigger_key_positions_len = DT_INST_PROP_LEN(n, hold_trigger_key_positions),         \
-        .idle_ignore_key_positions = DT_INST_PROP(n, idle_ignore_key_positions),                   \
+        .idle_ignore_key_positions =                                                               \
+            COND_CODE_1(DT_INST_NODE_HAS_PROP(n, idle_ignore_key_positions),                       \
+                        (idle_ignore_key_positions_##n), (NULL)),                                  \
         .idle_ignore_key_positions_len = DT_INST_PROP_LEN(n, idle_ignore_key_positions),           \
     };                                                                                             \
     static struct behavior_hold_tap_data behavior_hold_tap_data_##n = {};                          \
